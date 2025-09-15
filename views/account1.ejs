@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Account</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="
+    background-image: url('images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    <main>
+        <section class="top">
+            <div class="container">
+                <div class="top_inner">
+                    <div class="account_photo">
+                        <img src="images/male.svg" alt="фото" height="300px">
+                    </div>
+                    <div class="top_content">
+                        <div class="container">
+                            <div id="userData"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+    <%- include('blocks/footer') -%>
+    <script src="js/account.js"></script>
+</body>
+</html>

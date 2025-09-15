@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Особистий кабінет</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/account.css">
+</head>
+<body style="
+    background-image: url('images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    
+    <main>
+        <div class="account-container">
+            <div id="loadingMessage" class="loading">
+                Завантаження даних...
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;">
+                Помилка завантаження даних користувача
+            </div>
+
+            <div id="userContent" style="display: none;">
+                <!-- Заголовок профілю -->
+                <div class="profile-header">
+                    <div class="profile-photo">
+                        <img id="profileImage" src="images/male.svg" alt="Фото профілю">
+                    </div>
+                    <div class="profile-info">
+                        <h1 id="fullName">Ім'я користувача</h1>
+                        <div id="roleBadge" class="role-badge">Користувач</div>
+                        <div class="info-row">
+                            <span class="info-label">ID користувача:</span>
+                            <span id="userId" class="info-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статистика -->
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <h3 id="visitCount">15</h3>
+                        <p>Відвідувань цього місяця</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="memberSince">2023</h3>
+                        <p>Член клубу з</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="activePrograms">3</h3>
+                        <p>Активні програми</p>
+                    </div>
+                </div>
+
+                <!-- Основний контент -->
+                <div class="content-grid">
+                    <div class="info-card">
+                        <h2>📋 Особиста інформація</h2>
+                        <div class="info-row">
+                            <span class="info-label">Ім'я користувача:</span>
+                            <span id="username" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Стать:</span>
+                            <span id="gender" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span id="email" class="info-value">user@example.com</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Телефон:</span>
+                            <span id="phone" class="info-value">+38 (0XX) XXX-XX-XX</span>
+                        </div>
+                    </div>
+
+                    <div class="membership-card">
+                        <h2>🏃‍♂️ Членство</h2>
+                        <div class="info-row">
+                            <span class="info-label">Статус:</span>
+                            <span id="membershipStatus" class="membership-status status-active">Активне</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Тип членства:</span>
+                            <span id="membershipType" class="info-value">Преміум</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Дійсне до:</span>
+                            <span id="membershipExpiry" class="info-value">31.12.2024</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Прогрес місяця:</span>
+                            <div class="progress-bar">
+                                <div id="monthProgress" class="progress-fill" style="width: 65%">65%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Дії -->
+                <div class="actions-grid">
+                    <button class="action-btn" onclick="editProfile()">
+                        ✏️ Редагувати профіль
+                    </button>
+                    <button class="action-btn" onclick="viewSchedule()">
+                        📅 Розклад занять
+                    </button>
+                    <button class="action-btn" onclick="bookTraining()">
+                        🏋️‍♂️ Записатися на тренування
+                    </button>
+                    <button class="action-btn secondary" onclick="viewHistory()">
+                        📊 Історія відвідувань
+                    </button>
+                    <button class="action-btn secondary" onclick="paymentHistory()">
+                        💳 Платежі
+                    </button>
+                    <button class="action-btn secondary" onclick="logout()">
+                        🚪 Вийти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="js/account.js"></script>
+</body>
+</html>

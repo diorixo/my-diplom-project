@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+    <meta charset="UTF-8">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <title>Login Page</title>
+    <link rel="stylesheet" href="css/login_page_style.css">
+    <script src="js/login_page.js" defer></script>
+</head>
+<body>
+    <article class="container">
+        <div class="block">
+            <section class="block_item block-item">
+                <h2 class="block-item_title">Вже є аккаунт?</h2>
+                <button class="block-item_btn login-btn">Увійти</button>
+            </section>
+            <section class="block_item block-item">
+                <h2 class="block-item_title">Ще немає аккаунта?</h2>
+                <button class="block-item_btn register-btn">Зареєструватися</button>
+            </section>
+        </div>
+        <div class="form-box">
+            <form action="#" id="loginForm" class="form form_login">
+                <h3 class="form_title">Вхід</h3>
+                <p>
+                    <input type="text" id="username_input_login" name="username_input_login" class="form_input" placeholder="Логін" required>
+                </p>
+                <p>
+                    <input type="password" id="password_input_login" name="password_input_login" class="form_input" placeholder="Пароль" required>
+                </p>
+                <p id="login_msg"></p>
+                <p>
+                    <button type="submit" class="form_btn">Увійти</button>
+                </p>
+            </form>
+
+            <form action="#" id="registerForm" class="form form_register">
+                <h3 class="form_title">Реєстрація</h3>
+                <p>
+                    <input type="text" id="username_input_register" name="username_input_register" class="form_input" placeholder="Логін" required>
+                </p>
+                <p>
+                    <input type="text" id="firstname_input_register" name="firstname_input_register" class="form_input" placeholder="Ім'я" required>
+                </p>
+                <p>
+                    <input type="text" id="lastname_input_register" name="lastname_input_register" class="form_input" placeholder="Прізвище" required>
+                </p>
+                <p>
+                    <input type="radio" id="male_input_register" name="gender_input_register" class="radio_input" value="Чоловік" checked>
+                    <label for="male_input_register">Чоловік</label>
+                    <input type="radio" id="female_input_register" name="gender_input_register" class="radio_input" value="Жінка" >
+                    <label for="female_input_register">Жінка</label>
+                </p>
+                <p>
+                    <input type="password" id="password_input_register" name="password_input_register" class="form_input" placeholder="Пароль" required>
+                </p>
+                <p>
+                    <input type="password" id="password_input_register_confirm" name="password_input_register_confirm" class="form_input" placeholder="Підтвердіть пароль" required>
+                </p>
+                <p id="register_msg"></p>
+                <p>
+                    <button type="submit" class="form_btn form_btn_register">Зареєструватися</button>
+                </p>
+            </form>
+        </div>
+    </article>
+</body>
+</html>
