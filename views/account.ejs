@@ -74,11 +74,11 @@
                         </div>
                         <div class="info-row">
                             <span class="info-label">Email:</span>
-                            <span id="email" class="info-value">user@example.com</span>
+                            <span id="email" class="info-value">-</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Телефон:</span>
-                            <span id="phone" class="info-value">+38 (0XX) XXX-XX-XX</span>
+                            <span id="phone" class="info-value">-</span>
                         </div>
                     </div>
 
@@ -126,6 +126,62 @@
                         🚪 Вийти
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно для редагування профілю -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>✏️ Редагувати профіль</h2>
+                    <span class="close">&times;</span>
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    Профіль успішно оновлено!
+                </div>
+
+                <form id="editForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editFirstName">Ім'я:</label>
+                            <input type="text" id="editFirstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLastName">Прізвище:</label>
+                            <input type="text" id="editLastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editUsername">Ім'я користувача:</label>
+                        <input type="text" id="editUsername" name="username" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEmail">Email:</label>
+                            <input type="email" id="editEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhone">Телефон:</label>
+                            <input type="tel" id="editPhone" name="phone" placeholder="+38 (0XX) XXX-XX-XX">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editGender">Стать:</label>
+                        <select id="editGender" name="gender" required>
+                            <option value="male">Чоловік</option>
+                            <option value="female">Жінка</option>
+                        </select>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    </div>
+                </form>
             </div>
         </div>
     </main>

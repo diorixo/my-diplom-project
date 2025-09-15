@@ -64,7 +64,7 @@ exports.loginUser = async (req, res) => {
 exports.getUserData = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const query = 'SELECT id, username, role, firstname, lastname, gender FROM users WHERE id = $1';
+        const query = 'SELECT id, username, role, firstname, lastname, gender, email, phone FROM users WHERE id = $1';
         const values = [userId];
         const { rows } = await db.pool.query(query, values);
         if (rows.length === 0) {
@@ -74,13 +74,37 @@ exports.getUserData = async (req, res) => {
         return res.status(200).json({ 
             userId: user.id, 
             username: user.username,
-            userRole: user.role,
+            role: user.role,
             firstName: user.firstname,
             lastName: user.lastname,
-            gender: user.gender
+            gender: user.gender,
+            email: user.email,
+            phone: user.phone
         });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+exports.updateUser = async (req, res) => {
+    try {
+        const { firstName, lastName, username, gender, email, phone } = req.body;
+        const userId = req.user.userId;
+
+        const query = 'UPDATE users SET firstName = $1, lastName = $2, username = $3, gender = $4, email = $5, phone = $6 WHERE id = $7';
+        const values = [firstName, lastName, username, gender, email, phone, userId];
+        await db.pool.query(query, values);
+        
+        res.json({ 
+            success: true, 
+            message: 'Профіль успішно оновлено' 
+        });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Помилка оновлення профілю' 
+        });
+    }
+};

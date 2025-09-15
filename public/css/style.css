@@ -29,13 +29,13 @@ main {
 }
 
 header {
-    position: fixed;
+    /* position: fixed;
     top: 0;
-    left: 0;
+    left: 0; */
     width: 100%;
     background-color: #ffffff;
     padding: 0 10px;
-    z-index: 1000;
+    /* z-index: 1000; */
 }
 
 .container {
@@ -92,7 +92,7 @@ header {
 }
 
 .top {
-    margin-top: 140px;
+    margin-top: 40px;
     margin-bottom: 50px;
 }
 

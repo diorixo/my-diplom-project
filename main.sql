@@ -1,22 +1,38 @@
 drop table users;
 
 CREATE TABLE users (
- 	id SERIAL PRIMARY KEY,
-    username VARCHAR(255),
-	firstname VARCHAR(255),
-	lastname VARCHAR(255),
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
     gender VARCHAR(10),
-	role VARCHAR(255) DEFAULT 'user',
-    password VARCHAR(255)
+    email VARCHAR(50) DEFAULT 'email@gmail.com',
+    phone VARCHAR(50) DEFAULT '+1111111',
+    role VARCHAR(255) DEFAULT 'user' NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP DEFAULT now() NOT NULL
 );
+
+-- Функція, яка оновлює updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = now();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Тригер для таблиці users
+CREATE TRIGGER set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 select * from users order by id;
 
-update users set role = 'admin' where id = 2;
-update users set role = 'coach' where id = 2;
+SELECT id, username, role, firstname, lastname, gender, email, phone FROM users WHERE id = 1;
 
-
-drop table coaches;
 
 CREATE TABLE coaches (
     id SERIAL PRIMARY KEY,
@@ -27,9 +43,8 @@ CREATE TABLE coaches (
     email VARCHAR(255),
     rating DECIMAL(3,2) DEFAULT 0.00,
     total_reviews INTEGER DEFAULT 0,
+
     
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT rating_check CHECK (rating >= 0.00 AND rating <= 5.00)
+    CONSTRAINT rating_check CHECK (rating >= 0.00 AND rating <= 5.00),
 );
-
-select * from coaches order by id;

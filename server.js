@@ -22,16 +22,18 @@ app.get('/login_page', (req, res) => {
     res.render('login_page')
 })
 
-app.get('/account', (req, res) => {
+app.get('/account', authFunctions.authenticateToken, (req, res) => {
     res.render('account')
 })
 
+//поискать что это
 app.get('/user_data', authFunctions.authenticateToken, (req, res) => {
     const userId = req.user.userId;
     const userRole = req.user.userRole;
     res.json({ userId: userId, userRole: userRole });
 })
 
+//поискать что это
 app.get('/is_logged', authFunctions.isUserLoggedIn, (req, res) => {
     if (req.user) {
       res.json({ logged: true });

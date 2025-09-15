@@ -1,7 +1,11 @@
+// JavaScript для сторінки користувача спорт залу - account.js
+
+// Отримання посилань на елементи
 const userDataContainer = document.getElementById('userContent');
 const loadingMessage = document.getElementById('loadingMessage');
 const errorMessage = document.getElementById('errorMessage');
 
+// Функція завантаження даних користувача
 const fetchUserData = async () => {
     try {
         const response = await fetch('/get_user');
@@ -12,17 +16,19 @@ const fetchUserData = async () => {
 
         const data = await response.json();
         console.log(data);
-                
+        
         // Заповнюємо дані користувача
         document.getElementById('fullName').textContent = `${data.firstName} ${data.lastName}`;
         document.getElementById('userId').textContent = data.userId;
         document.getElementById('username').textContent = data.username;
-        document.getElementById('gender').textContent = data.gender;
-        document.getElementById('roleBadge').textContent = data.userRole;
-            
+        document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';
+        document.getElementById('roleBadge').textContent = data.role;
+        document.getElementById('email').textContent = data.email;
+        document.getElementById('phone').textContent = data.phone;
+        
         // Встановлюємо відповідне зображення залежно від статі
         const profileImage = document.getElementById('profileImage');
-        if (data.gender === 'Чоловік') {
+        if (data.gender === 'male') {
             profileImage.src = 'images/male.svg';
         } else {
             profileImage.src = 'images/female.svg';
@@ -31,7 +37,7 @@ const fetchUserData = async () => {
         // Показуємо контент і приховуємо завантаження
         loadingMessage.style.display = 'none';
         userDataContainer.style.display = 'block';
-            
+        
         // Додаємо анімацію появи
         userDataContainer.style.opacity = '0';
         userDataContainer.style.transform = 'translateY(20px)';
@@ -50,8 +56,22 @@ const fetchUserData = async () => {
 
 // Функції для дій користувача
 function editProfile() {
-    alert('Перенаправлення на сторінку редагування профілю...');
-    // window.location.href = '/edit-profile';
+    const modal = document.getElementById('editModal');
+    
+    // Заповнюємо форму поточними даними
+    const fullNameText = document.getElementById('fullName').textContent;
+    const nameParts = fullNameText.split(' ');
+    
+    document.getElementById('editFirstName').value = nameParts[0] || '';
+    document.getElementById('editLastName').value = nameParts[1] || '';
+    document.getElementById('editUsername').value = document.getElementById('username').textContent;
+    document.getElementById('editEmail').value = document.getElementById('email').textContent;
+    document.getElementById('editPhone').value = document.getElementById('phone').textContent;
+    
+    const genderText = document.getElementById('gender').textContent;
+    document.getElementById('editGender').value = genderText === 'Чоловік' ? 'male' : 'female';
+    
+    modal.style.display = 'block';
 }
 
 function viewSchedule() {
@@ -93,7 +113,86 @@ function updateLiveData() {
     progressBar.textContent = progress + '%';
 }
 
-// Завантажуємо дані при завантаженні сторінки
+// Ініціалізація модального вікна
+const modal = document.getElementById('editModal');
+const closeBtn = document.querySelector('.close');
+const cancelBtn = document.getElementById('cancelBtn');
+const editForm = document.getElementById('editForm');
+const successMessage = document.getElementById('successMessage');
+
+// Закриття модального вікна
+closeBtn.onclick = function() {
+    modal.style.display = 'none';
+    successMessage.style.display = 'none';
+}
+
+cancelBtn.onclick = function() {
+    modal.style.display = 'none';
+    successMessage.style.display = 'none';
+}
+
+// Закриття при кліку поза модальним вікном
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+        successMessage.style.display = 'none';
+    }
+}
+
+// Обробка форми редагування
+editForm.onsubmit = async function(e) {
+    e.preventDefault();
+        
+    const formData = new FormData(editForm);
+    const updateData = {
+        firstName: formData.get('firstName'),
+        lastName: formData.get('lastName'),
+        username: formData.get('username'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        gender: formData.get('gender')
+    };
+
+    try {
+        // Відправка на сервер
+        const response = await fetch('/update_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+            // Оновлюємо дані на сторінці
+            document.getElementById('fullName').textContent = `${updateData.firstName} ${updateData.lastName}`;
+            document.getElementById('username').textContent = updateData.username;
+            document.getElementById('email').textContent = updateData.email;
+            document.getElementById('phone').textContent = updateData.phone;
+            document.getElementById('gender').textContent = updateData.gender === 'male' ? 'Чоловік' : 'Жінка';
+                
+            // Оновлюємо фото відповідно до статі
+            const profileImage = document.getElementById('profileImage');
+            profileImage.src = updateData.gender === 'male' ? 'images/male.svg' : 'images/female.svg';
+                
+            // Показуємо повідомлення про успіх
+            successMessage.style.display = 'block';
+            
+            // Закриваємо модальне вікно через 2 секунди
+            setTimeout(() => {
+                modal.style.display = 'none';
+                successMessage.style.display = 'none';
+            }, 2000);
+                
+        } else {
+            throw new Error('Помилка оновлення профілю');
+        }
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Помилка при оновленні профілю. Спробуйте ще раз.');
+    }
+};
+
 fetchUserData();
 
 // Оновлюємо деякі дані кожні 30 секунд (опціонально)
