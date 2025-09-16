@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запис на тренування</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/training.css">
+</head>
+<body style="
+    background-image: url('images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    
+    <main>
+        <div class="booking-container">
+            <!-- Заголовок -->
+            <div class="page-header">
+                <h1>Запис на тренування</h1>
+                <p>Оберіть зручний час та тип тренування</p>
+            </div>
+
+            <!-- Фільтри -->
+            <div class="filters-section">
+                <h2>🔍 Фільтри</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="dateFilter">Дата:</label>
+                        <input type="date" id="dateFilter" min="" max="">
+                    </div>
+                    <div class="filter-group">
+                        <label for="typeFilter">Тип тренування:</label>
+                        <select id="typeFilter">
+                            <option value="">Всі види</option>
+                            <option value="gym">Тренажерний зал</option>
+                            <option value="cardio">Кардіо</option>
+                            <option value="yoga">Йога</option>
+                            <option value="pilates">Пілатес</option>
+                            <option value="crossfit">Кросфіт</option>
+                            <option value="boxing">Бокс</option>
+                            <option value="swimming">Плавання</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="trainerFilter">Тренер:</label>
+                        <select id="trainerFilter">
+                            <option value="">Всі тренери</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="timeFilter">Час:</label>
+                        <select id="timeFilter">
+                            <option value="">Будь-який час</option>
+                            <option value="morning">Ранок (6:00-12:00)</option>
+                            <option value="afternoon">День (12:00-18:00)</option>
+                            <option value="evening">Вечір (18:00-22:00)</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="apply-filters-btn" onclick="applyFilters()">Застосувати фільтри</button>
+            </div>
+
+            <!-- Розклад -->
+            <div class="schedule-section">
+                <div class="section-header">
+                    <h2>📅 Доступні тренування</h2>
+                    <div class="view-controls">
+                        <button class="view-btn active" onclick="setView('day')">День</button>
+                        <button class="view-btn" onclick="setView('week')">Тиждень</button>
+                    </div>
+                </div>
+
+                <div id="loadingSchedule" class="loading">
+                    Завантаження розкладу...
+                </div>
+
+                <div id="scheduleContent" style="display: none;">
+                    <!-- День-навігація -->
+                    <div class="date-navigation">
+                        <button class="nav-btn" onclick="changeDate(-1)">←</button>
+                        <span id="currentDateDisplay">Сьогодні</span>
+                        <button class="nav-btn" onclick="changeDate(1)">→</button>
+                    </div>
+
+                    <!-- Сітка тренувань -->
+                    <div class="training-grid" id="trainingGrid">
+                        <!-- Тренування будуть додані динамічно -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Мої записи -->
+            <div class="my-bookings-section">
+                <h2>📋 Мої записи</h2>
+                <div id="myBookings" class="bookings-list">
+                    <!-- Записи будуть завантажені динамічно -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно бронювання -->
+        <div id="bookingModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>✅ Підтвердження запису</h2>
+                    <span class="close" onclick="closeModal()">&times;</span>
+                </div>
+
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span class="label">Тип тренування:</span>
+                        <span id="modalTrainingType" class="value">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Тренер:</span>
+                        <span id="modalTrainer" class="value">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Дата та час:</span>
+                        <span id="modalDateTime" class="value">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Тривалість:</span>
+                        <span id="modalDuration" class="value">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="label">Вартість:</span>
+                        <span id="modalPrice" class="value">-</span>
+                    </div>
+                </div>
+
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label for="bookingNotes">Додаткові побажання (необов'язково):</label>
+                        <textarea id="bookingNotes" name="notes" rows="3" placeholder="Напишіть ваші побажання або особливі вимоги..."></textarea>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Підтвердити запис</button>
+                    </div>
+                </form>
+
+                <div class="success-message" id="bookingSuccess" style="display: none;">
+                    ✅ Запис успішно створено!
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно скасування -->
+        <div id="cancelModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>❌ Скасування запису</h2>
+                    <span class="close" onclick="closeCancelModal()">&times;</span>
+                </div>
+
+                <div class="cancel-warning">
+                    <p>Ви впевнені, що хочете скасувати цей запис?</p>
+                    <div id="cancelBookingDetails" class="booking-details">
+                        <!-- Деталі запису -->
+                    </div>
+                    <p class="warning-text">⚠️ Скасування менше ніж за 2 години до початку може призвести до стягнення.</p>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeCancelModal()">Назад</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmCancel()">Скасувати запис</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="js/training.js"></script>
+</body>
+</html>

@@ -13,6 +13,8 @@ app.use(cookieParser());
 
 
 app.use(require('./routes/user_route'))
+app.use(require('./routes/training_route'))
+app.use(require('./routes/category_route'))
 
 app.get('/', (req, res) => {
     res.render('index')
@@ -24,6 +26,10 @@ app.get('/login_page', (req, res) => {
 
 app.get('/account', authFunctions.authenticateToken, (req, res) => {
     res.render('account')
+})
+
+app.get('/training', authFunctions.authenticateToken, (req, res) => {
+    res.render('training')
 })
 
 //поискать что это
