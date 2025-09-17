@@ -9,6 +9,7 @@ let selectedBooking = null;
 // Ініціалізація при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
     initializePage();
+    loadCategories();
     loadTrainers();
     loadTrainings();
     loadUserBookings();
@@ -29,6 +30,32 @@ function initializePage() {
     dateFilter.value = today.toISOString().split('T')[0];
     
     updateDateDisplay();
+}
+
+// Завантаження категорій
+const loadCategories = async () => {
+    try {
+        const response = await fetch('/get_categories');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        // Заповнюємо список категорій у фільтрі
+        const categorySelect = document.getElementById('typeFilter');
+        data.rows.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.category;
+            categorySelect.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Помилка завантаження категорій:', error);
+    }
 }
 
 // Завантаження тренерів

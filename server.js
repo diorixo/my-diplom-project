@@ -15,6 +15,7 @@ app.use(cookieParser());
 app.use(require('./routes/user_route'))
 app.use(require('./routes/training_route'))
 app.use(require('./routes/category_route'))
+app.use(require('./routes/trainer_route'))
 
 app.get('/', (req, res) => {
     res.render('index')
@@ -28,23 +29,26 @@ app.get('/account', authFunctions.authenticateToken, (req, res) => {
     res.render('account')
 })
 
+app.get('/trainer_account', authFunctions.authenticateToken, (req, res) => {
+    res.render('trainer_account')
+})
+
 app.get('/training', authFunctions.authenticateToken, (req, res) => {
     res.render('training')
 })
 
-//поискать что это
-app.get('/user_data', authFunctions.authenticateToken, (req, res) => {
-    const userId = req.user.userId;
-    const userRole = req.user.userRole;
-    res.json({ userId: userId, userRole: userRole });
-})
+//не використвується
+// app.get('/user_data', authFunctions.authenticateToken, (req, res) => {
+//     const userId = req.user.userId;
+//     const userRole = req.user.userRole;
+//     res.json({ userId: userId, userRole: userRole, logged: true });
+// })
 
-//поискать что это
 app.get('/is_logged', authFunctions.isUserLoggedIn, (req, res) => {
     if (req.user) {
-      res.json({ logged: true });
+      res.json({ user_id: req.user.userId, user_role: req.user.userRole, logged: true });
     } else {
-      res.json({ logged: false });
+      res.json({ user_id: null, user_role: null, logged: false });
     }
 })
 

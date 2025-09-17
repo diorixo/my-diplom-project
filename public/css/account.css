@@ -44,16 +44,6 @@
     font-weight: bold;
 }
 
-.profile-info .role-badge {
-    display: inline-block;
-    background: linear-gradient(45deg, #007bff, #0056b3);
-    color: white;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    margin-bottom: 15px;
-}
-
 .profile-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

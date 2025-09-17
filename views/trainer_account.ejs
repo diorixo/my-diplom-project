@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабінет тренера</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/trainer_account.css">
+</head>
+<body style="
+    background-image: url('images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    
+    <main>
+        <div class="trainer-container">
+            <div id="loadingMessage" class="loading">
+                Завантаження даних...
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;">
+                Помилка завантаження даних тренера
+            </div>
+
+            <div id="trainerContent" style="display: none;">
+                <!-- Заголовок профілю тренера -->
+                <div class="trainer-header">
+                    <div class="trainer-photo">
+                        <img id="trainerImage" src="" alt="Фото тренера">
+                    </div>
+                    <div class="trainer-info">
+                        <h1 id="fullName">Ім'я тренера</h1>
+                        <div class="info-row">
+                            <span class="info-label">ID користувача:</span>
+                            <span id="trainerId" class="info-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Статистика тренера -->
+                <div class="trainer-stats">
+                    <div class="stat-card sessions">
+                        <h3 id="sessionsThisMonth">156</h3>
+                        <p>Тренувань цього місяця</p>
+                    </div>
+                    <div class="stat-card revenue">
+                        <h3 id="monthlyRevenue">45,000₴</h3>
+                        <p>Дохід за місяць</p>
+                    </div>
+                    <div class="stat-card schedule">
+                        <h3 id="upcomingSessions">12</h3>
+                        <p>Найближчі тренування</p>
+                    </div>
+                </div>
+
+                <!-- Основний контент -->
+                <div class="content-grid">
+                    <!-- Особиста інформація -->
+                    <div class="info-card">
+                        <h2>👤 Особиста інформація</h2>
+                        <div class="info-row">
+                            <span class="info-label">Ім'я користувача:</span>
+                            <span id="username" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Стать:</span>
+                            <span id="gender" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span id="email" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Телефон:</span>
+                            <span id="phone" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Дата реєстрації:</span>
+                            <span id="createdAt" class="info-value">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Професійна інформація -->
+                    <div class="professional-card">
+                        <h2>🏆 Професійна інформація</h2>
+                        <div class="info-row">
+                            <span class="info-label">Спеціалізація:</span>
+                            <span id="specialization" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Кількість відгуків:</span>
+                            <span id="totalReviews" class="info-value">0</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Загальний рейтинг:</span>
+                            <span id="rating" class="info-value">4.88</span>
+                        </div>
+                    </div>
+
+                    <!-- Активні тренування замість розкладу -->
+                    <div class="schedule-card">
+                        <h2>🏋️‍♂️ Активні тренування</h2>
+                        <div class="schedule-list" id="todaySchedule">
+                            <div class="schedule-item">
+                                <span class="time">60 хв</span>
+                                <span class="client">Силове тренування</span>
+                                <span class="type">5/10</span>
+                            </div>
+                            <div class="schedule-item">
+                                <span class="time">45 хв</span>
+                                <span class="client">Кардіо тренування</span>
+                                <span class="type">8/15</span>
+                            </div>
+                            <div class="schedule-item">
+                                <span class="time">90 хв</span>
+                                <span class="client">Йога для початківців</span>
+                                <span class="type">12/20</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Останні відгуки -->
+                    <div class="reviews-card">
+                        <h2>💬 Останні відгуки</h2>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="reviewer">Анна К.</span>
+                                <span class="review-rating">★★★★★</span>
+                            </div>
+                            <p class="review-text">"Чудовий тренер! Допоміг досягти всіх поставлених цілей."</p>
+                        </div>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="reviewer">Михайло Т.</span>
+                                <span class="review-rating">★★★★★</span>
+                            </div>
+                            <p class="review-text">"Професійний підхід, індивідуальна програма тренувань."</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Дії тренера -->
+                <div class="actions-grid">
+                    <button class="action-btn primary" onclick="editProfile()">
+                        ✏️ Редагувати профіль
+                    </button>
+                    <button class="action-btn primary" onclick="viewFullSchedule()">
+                        📅 Повний розклад
+                    </button>
+                    <button class="action-btn primary" onclick="manageClients()">
+                        👥 Управління клієнтами
+                    </button>
+                    <button class="action-btn secondary" onclick="viewStatistics()">
+                        📊 Детальна статистика
+                    </button>
+                    <button class="action-btn secondary" onclick="createWorkoutPlan()">
+                        🏋️‍♂️ Створити план тренувань
+                    </button>
+                    <button class="action-btn secondary" onclick="viewPayments()">
+                        💰 Фінанси та виплати
+                    </button>
+                    <button class="action-btn secondary" onclick="manageAvailability()">
+                        ⏰ Налаштувати доступність
+                    </button>
+                    <button class="action-btn logout" onclick="logout()">
+                        🚪 Вийти
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно для редагування профілю тренера -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>✏️ Редагувати профіль тренера</h2>
+                    <span class="close">&times;</span>
+                </div>
+
+                <div class="success-message" id="successMessage">
+                    Профіль тренера успішно оновлено!
+                </div>
+
+                <form id="editForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editFirstName">Ім'я:</label>
+                            <input type="text" id="editFirstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editLastName">Прізвище:</label>
+                            <input type="text" id="editLastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editUsername">Ім'я користувача:</label>
+                            <input type="text" id="editUsername" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editGender">Стать:</label>
+                            <select id="editGender" name="gender" required>
+                                <option value="male">Чоловік</option>
+                                <option value="female">Жінка</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editEmail">Email:</label>
+                            <input type="email" id="editEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhone">Телефон:</label>
+                            <input type="tel" id="editPhone" name="phone" placeholder="+38 (0XX) XXX-XX-XX" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                            <label for="editSpecialization">Спеціалізація:</label>
+                            <input type="text" id="editSpecialization" name="specialization" placeholder="Ваша спеціалізація" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBio">Біографія/Досягнення:</label>
+                        <textarea id="editBio" name="bio" rows="4" placeholder="Розкажіть про свій досвід, досягнення та підхід до тренувань..."></textarea>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="js/trainer_account.js"></script>
+</body>
+</html>

@@ -22,9 +22,9 @@ const fetchUserData = async () => {
         document.getElementById('userId').textContent = data.userId;
         document.getElementById('username').textContent = data.username;
         document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';
-        document.getElementById('roleBadge').textContent = data.role;
         document.getElementById('email').textContent = data.email;
         document.getElementById('phone').textContent = data.phone;
+        document.getElementById('memberSince').textContent = data.created_at;
         
         // Встановлюємо відповідне зображення залежно від статі
         const profileImage = document.getElementById('profileImage');
@@ -72,6 +72,7 @@ function editProfile() {
     document.getElementById('editGender').value = genderText === 'Чоловік' ? 'male' : 'female';
     
     modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Блокуємо скролл фону
 }
 
 function viewSchedule() {
@@ -80,8 +81,7 @@ function viewSchedule() {
 }
 
 function bookTraining() {
-    alert('Перенаправлення на запис на тренування...');
-    // window.location.href = '/book-training';
+    window.location.href = '/training';
 }
 
 function viewHistory() {
@@ -120,22 +120,25 @@ const cancelBtn = document.getElementById('cancelBtn');
 const editForm = document.getElementById('editForm');
 const successMessage = document.getElementById('successMessage');
 
-// Закриття модального вікна
-closeBtn.onclick = function() {
+function closeModal() {
     modal.style.display = 'none';
     successMessage.style.display = 'none';
+    document.body.style.overflow = 'auto'; // Відновлюємо скролл
+}
+
+// Закриття модального вікна
+closeBtn.onclick = function() {
+    closeModal()
 }
 
 cancelBtn.onclick = function() {
-    modal.style.display = 'none';
-    successMessage.style.display = 'none';
+    closeModal()
 }
 
 // Закриття при кліку поза модальним вікном
 window.onclick = function(event) {
     if (event.target == modal) {
-        modal.style.display = 'none';
-        successMessage.style.display = 'none';
+        closeModal()
     }
 }
 
@@ -180,8 +183,7 @@ editForm.onsubmit = async function(e) {
             
             // Закриваємо модальне вікно через 2 секунди
             setTimeout(() => {
-                modal.style.display = 'none';
-                successMessage.style.display = 'none';
+                closeModal()
             }, 2000);
                 
         } else {

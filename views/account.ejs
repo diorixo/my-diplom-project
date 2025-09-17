@@ -36,7 +36,6 @@
                     </div>
                     <div class="profile-info">
                         <h1 id="fullName">Ім'я користувача</h1>
-                        <div id="roleBadge" class="role-badge">Користувач</div>
                         <div class="info-row">
                             <span class="info-label">ID користувача:</span>
                             <span id="userId" class="info-value">-</span>
@@ -53,10 +52,6 @@
                     <div class="stat-card">
                         <h3 id="memberSince">2023</h3>
                         <p>Член клубу з</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="activePrograms">3</h3>
-                        <p>Активні програми</p>
                     </div>
                 </div>
 
@@ -152,12 +147,19 @@
                             <input type="text" id="editLastName" name="lastName" required>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="editUsername">Ім'я користувача:</label>
-                        <input type="text" id="editUsername" name="username" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editUsername">Ім'я користувача:</label>
+                            <input type="text" id="editUsername" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editGender">Стать:</label>
+                            <select id="editGender" name="gender" required>
+                                <option value="male">Чоловік</option>
+                                <option value="female">Жінка</option>
+                            </select>
+                        </div>
                     </div>
-
                     <div class="form-row">
                         <div class="form-group">
                             <label for="editEmail">Email:</label>
@@ -168,15 +170,6 @@
                             <input type="tel" id="editPhone" name="phone" placeholder="+38 (0XX) XXX-XX-XX">
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="editGender">Стать:</label>
-                        <select id="editGender" name="gender" required>
-                            <option value="male">Чоловік</option>
-                            <option value="female">Жінка</option>
-                        </select>
-                    </div>
-
                     <div class="modal-buttons">
                         <button type="button" class="btn btn-secondary" id="cancelBtn">Скасувати</button>
                         <button type="submit" class="btn btn-primary">Зберегти зміни</button>
