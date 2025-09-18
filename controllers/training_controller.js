@@ -2,7 +2,6 @@ const db = require('../services/db');
 
 exports.addTraining = async (req, res) => {
 	try {
-		console.log('Request body:', req.body); // Додатковий лог для перевірки
     const { category_id, name, date, time, duration, price, max_participants } = req.body;
     const userId = req.user.userId;
 
