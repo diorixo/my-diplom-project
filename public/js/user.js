@@ -18,7 +18,7 @@ const fetchUserData = async () => {
         console.log(data);
         
         // Заповнюємо дані користувача
-        document.getElementById('fullName').textContent = `${data.firstName} ${data.lastName}`;
+        document.getElementById('fullName').textContent = `${data.firstname} ${data.lastname}`;
         document.getElementById('userId').textContent = data.userId;
         document.getElementById('username').textContent = data.username;
         document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';

@@ -4,5 +4,7 @@ const authFunctions = require('../services/session');
 
 router.get('/get_trainer', authFunctions.authenticateToken, trainerController.getTrainerData);
 router.post('/update_trainer', authFunctions.authenticateToken, trainerController.updateTrainer);
+router.get('/trainer/get_trainer_active_trainings', authFunctions.authenticateToken, trainerController.getTrainerActiveTrainings);
+router.get('/trainer/get_trainer_trainings', authFunctions.authenticateToken, trainerController.getTrainerTrainings);
 
 module.exports = router;

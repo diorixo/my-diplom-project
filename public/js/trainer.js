@@ -64,7 +64,7 @@ const fetchTrainerData = async () => {
 // Завантаження тренувань тренера з бази даних
 const loadTrainerTrainings = async () => {
     try {
-        const response = await fetch('/get_trainer_trainings');
+        const response = await fetch('/trainer/get_trainer_active_trainings');
         if (response.ok) {
             const trainingData = await response.json();
             displayTrainerTrainings(trainingData.trainings);
@@ -119,57 +119,13 @@ function editProfile() {
     document.body.style.overflow = 'hidden'; // Блокуємо скролл фону
 }
 
-function viewFullSchedule() {
+function viewSchedule() {
     // Перенаправлення на повний розклад
-    window.location.href = '/trainer/schedule';
-}
-
-function manageClients() {
-    // Перенаправлення на управління клієнтами
-    window.location.href = '/trainer/clients';
-}
-
-function viewStatistics() {
-    // Перенаправлення на детальну статистику
-    window.location.href = '/trainer/statistics';
-}
-
-function createWorkoutPlan() {
-    // Перенаправлення на створення плану тренувань
-    window.location.href = '/trainer/create-plan';
-}
-
-function viewPayments() {
-    // Перенаправлення на фінанси
-    window.location.href = '/trainer/payments';
-}
-
-function manageAvailability() {
-    // Перенаправлення на налаштування доступності
-    window.location.href = '/trainer/availability';
+    window.location.href = '/trainer/manage_trainings';
 }
 
 function logout() {
     window.location.href = '/logout';
-}
-
-// Симуляція живих даних для демонстрації
-function updateLiveStatistics() {
-    // Оновлюємо статистику клієнтів (симуляція)
-    const activeClients = Math.floor(Math.random() * 10) + 25;
-    document.getElementById('activeClients').textContent = activeClients;
-    
-    // Оновлюємо кількість тренувань
-    const sessions = Math.floor(Math.random() * 20) + 150;
-    document.getElementById('sessionsThisMonth').textContent = sessions;
-    
-    // Оновлюємо дохід
-    const revenue = (Math.floor(Math.random() * 15000) + 40000).toLocaleString();
-    document.getElementById('monthlyRevenue').textContent = revenue + '₴';
-    
-    // Оновлюємо найближчі тренування
-    const upcoming = Math.floor(Math.random() * 8) + 8;
-    document.getElementById('upcomingSessions').textContent = upcoming;
 }
 
 // Ініціалізація модального вікна

@@ -3,17 +3,26 @@ let currentDate = new Date();
 let currentView = 'day';
 let trainings = [];
 let trainers = [];
+let categories = [];
+let trainingsAllData = [];
 let userBookings = [];
 let selectedBooking = null;
 
 // Ініціалізація при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
     initializePage();
-    loadCategories();
-    loadTrainers();
-    loadTrainings();
+    init();
     loadUserBookings();
 });
+
+const init = async () => {
+    try {
+        await Promise.all([loadCategories(), loadTrainers()]);
+        await loadTrainings();
+    } catch (err) {
+        console.error('Помилка ініціалізації:', err);
+    }
+}
 
 // Ініціалізація сторінки
 function initializePage() {
@@ -41,14 +50,15 @@ const loadCategories = async () => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log(data);
+        const result = await response.json();
+        categories = result.rows
+        console.log(categories);
 
         // Заповнюємо список категорій у фільтрі
         const categorySelect = document.getElementById('typeFilter');
-        data.rows.forEach(category => {
+        categories.forEach(category => {
             const option = document.createElement('option');
-            option.value = category.id;
+            option.value = category.category;
             option.textContent = category.category;
             categorySelect.appendChild(option);
         });
@@ -59,97 +69,90 @@ const loadCategories = async () => {
 }
 
 // Завантаження тренерів
-async function loadTrainers() {
+const loadTrainers = async () => {
     try {
-        // Симуляція API виклику
-        trainers = [
-            { id: 1, name: 'Олександр Петренко', specialization: 'Силові тренування', avatar: 'О' },
-            { id: 2, name: 'Марія Іваненко', specialization: 'Йога та пілатес', avatar: 'М' },
-            { id: 3, name: 'Андрій Коваль', specialization: 'Кардіо та кросфіт', avatar: 'А' },
-            { id: 4, name: 'Катерина Мельник', specialization: 'Аеробіка та фітнес', avatar: 'К' },
-            { id: 5, name: 'Дмитро Сидоров', specialization: 'Бокс та єдиноборства', avatar: 'Д' }
-        ];
-        
-        // Заповнюємо список тренерів у фільтрі
-        const trainerSelect = document.getElementById('trainerFilter');
-        trainers.forEach(trainer => {
-            const option = document.createElement('option');
-            option.value = trainer.id;
-            option.textContent = trainer.name;
-            trainerSelect.appendChild(option);
-        });
-        
+        const response = await fetch('/get_active_trainers');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        trainers = result.rows;
+        console.log(trainers);
+
+        if (trainers.length !== 0) {
+            // Заповнюємо список тренерів у фільтрі
+            const trainerSelect = document.getElementById('trainerFilter');
+            trainers.forEach(trainer => {
+                const option = document.createElement('option');
+                option.value = trainer.id;
+                option.textContent = trainer.firstname + ' ' + trainer.lastname;
+                trainerSelect.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Помилка завантаження тренерів:', error);
     }
 }
 
 // Завантаження тренувань
-async function loadTrainings() {
+const loadTrainings = async () => {
     try {
-        document.getElementById('loadingSchedule').style.display = 'block';
-        document.getElementById('scheduleContent').style.display = 'none';
+        // await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await fetch('/get_active_trainings');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        trainings = result.rows;
+        console.log(trainings);
+
+        // Формуємо фінальний масив
+        const trainingsAllData = trainings.map((t) => {
+            const trainer = trainers.find(tr => tr.id === t.trainer_id);
+            const category = categories.find(cat => cat.id === t.category_id);
         
-        // Симуляція API виклику
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        trainings = generateSampleTrainings();
-        
+            return {
+                id: t.id,
+                type: category ? category.category : 'unknown',
+                name: t.name,
+                trainer: trainer ? {
+                    id: trainer.id,
+                    name: `${trainer.firstname} ${trainer.lastname}`,
+                    specialization: trainer.specialization || 'unknown',
+                    avatar: trainer.avatar || 'NO'
+                } : {
+                    id: null,
+                    name: 'unknown',
+                    specialization: 'unknown',
+                    avatar: 'NO'
+                },
+                date: new Date(t.date),
+                time: t.time,
+                duration: `${t.duration} хв`,
+                price: t.price,
+                maxParticipants: t.max_participants,
+                currentParticipants: t.current_participants,
+                status: t.current_participants >= t.max_participants ? 'full' : 'available',
+                isBooked: false
+            };
+        });
+
+        trainings = trainingsAllData;
+        console.log(trainings[0]);
+
         document.getElementById('loadingSchedule').style.display = 'none';
         document.getElementById('scheduleContent').style.display = 'block';
         
         displayTrainings();
-        
+
     } catch (error) {
         console.error('Помилка завантаження тренувань:', error);
         document.getElementById('loadingSchedule').innerHTML = 'Помилка завантаження розкладу';
     }
-}
-
-// Генерація зразкових тренувань
-function generateSampleTrainings() {
-    const types = [
-        { type: 'gym', name: 'Тренажерний зал', duration: '60 хв', price: '200 грн' },
-        { type: 'cardio', name: 'Кардіо тренування', duration: '45 хв', price: '150 грн' },
-        { type: 'yoga', name: 'Йога', duration: '75 хв', price: '180 грн' },
-        { type: 'pilates', name: 'Пілатес', duration: '60 хв', price: '170 грн' },
-        { type: 'crossfit', name: 'Кросфіт', duration: '90 хв', price: '250 грн' },
-        { type: 'boxing', name: 'Бокс', duration: '60 хв', price: '220 грн' },
-        { type: 'swimming', name: 'Плавання', duration: '45 хв', price: '160 грн' }
-    ];
-    
-    const times = ['08:00', '09:30', '11:00', '14:00', '16:00', '18:00', '19:30', '21:00'];
-    const sampleTrainings = [];
-    
-    // Генеруємо тренування на поточний день
-    const today = new Date(currentDate);
-    
-    for (let i = 0; i < 12; i++) {
-        const type = types[Math.floor(Math.random() * types.length)];
-        const trainer = trainers[Math.floor(Math.random() * trainers.length)];
-        const time = times[Math.floor(Math.random() * times.length)];
-        const maxParticipants = Math.floor(Math.random() * 10) + 5;
-        const currentParticipants = Math.floor(Math.random() * maxParticipants);
-        
-        const training = {
-            id: i + 1,
-            type: type.type,
-            name: type.name,
-            trainer: trainer,
-            date: new Date(today),
-            time: time,
-            duration: type.duration,
-            price: type.price,
-            maxParticipants: maxParticipants,
-            currentParticipants: currentParticipants,
-            status: currentParticipants >= maxParticipants ? 'full' : 'available',
-            isBooked: false
-        };
-        
-        sampleTrainings.push(training);
-    }
-    
-    return sampleTrainings;
 }
 
 // Відображення тренувань
@@ -192,7 +195,7 @@ function createTrainingCard(training) {
         <div class="status-badge ${statusClass}">${statusText}</div>
         <div class="training-header">
             <div class="training-type">${training.name}</div>
-            <div class="training-time">${training.time}</div>
+            <div class="training-time">${training.time.slice(0, 5)}</div>
         </div>
         <div class="trainer-info">
             <div class="trainer-avatar">${training.trainer.avatar}</div>
@@ -203,7 +206,7 @@ function createTrainingCard(training) {
         </div>
         <div class="training-details">
             <span class="duration">⏱️ ${training.duration}</span>
-            <span class="price">💰 ${training.price}</span>
+            <span class="price">💰 ${training.price} грн</span>
         </div>
         <div class="participants">
             👥 ${training.currentParticipants}/${training.maxParticipants} учасників
@@ -227,11 +230,15 @@ function applyCurrentFilters() {
     
     let filtered = trainings.filter(training => {
         // Фільтр по даті
-        const trainingDate = training.date.toISOString().split('T')[0];
+        const date = training.date;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // місяці від 0
+        const day = String(date.getDate()).padStart(2, '0');
+        const trainingDate = `${year}-${month}-${day}`;
         if (dateFilter && trainingDate !== dateFilter) {
             return false;
         }
-        
+
         // Фільтр по типу
         if (typeFilter && training.type !== typeFilter) {
             return false;
@@ -270,7 +277,6 @@ function applyFilters() {
     if (dateValue) {
         currentDate = new Date(dateValue);
         updateDateDisplay();
-        trainings = generateSampleTrainings();
     }
     displayTrainings();
 }
@@ -317,7 +323,6 @@ function changeDate(delta) {
     
     updateDateDisplay();
     document.getElementById('dateFilter').value = currentDate.toISOString().split('T')[0];
-    trainings = generateSampleTrainings();
     displayTrainings();
 }
 
@@ -364,7 +369,7 @@ function openBookingModal(trainingId) {
     document.getElementById('modalDateTime').textContent = 
         `${training.date.toLocaleDateString('uk-UA')} о ${training.time}`;
     document.getElementById('modalDuration').textContent = training.duration;
-    document.getElementById('modalPrice').textContent = training.price;
+    document.getElementById('modalPrice').textContent = training.price + ' грн';
     
     // Очищуємо форму
     document.getElementById('bookingNotes').value = '';
@@ -501,7 +506,7 @@ function displayUserBookings() {
         bookingItem.innerHTML = `
             <div class="booking-info">
                 <h4>${booking.training.name}</h4>
-                <p>🧑‍🏫 Тренер: ${booking.training.trainer.name}</p>
+                <p>🧑 Тренер: ${booking.training.trainer.name}</p>
                 <p>📅 ${booking.training.date.toLocaleDateString('uk-UA')} о ${booking.training.time}</p>
                 <p>⏱️ Тривалість: ${booking.training.duration}</p>
                 ${booking.notes ? `<p>📝 Примітки: ${booking.notes}</p>` : ''}

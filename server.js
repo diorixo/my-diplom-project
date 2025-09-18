@@ -25,12 +25,16 @@ app.get('/login_page', (req, res) => {
     res.render('login_page')
 })
 
-app.get('/account', authFunctions.authenticateToken, (req, res) => {
-    res.render('account')
+app.get('/user', authFunctions.authenticateToken, (req, res) => {
+    res.render('user')
 })
 
-app.get('/trainer_account', authFunctions.authenticateToken, (req, res) => {
-    res.render('trainer_account')
+app.get('/trainer', authFunctions.authenticateToken, (req, res) => {
+    res.render('trainer')
+})
+
+app.get('/trainer/manage_trainings', authFunctions.authenticateToken, (req, res) => {
+    res.render('manage_trainings')
 })
 
 app.get('/training', authFunctions.authenticateToken, (req, res) => {

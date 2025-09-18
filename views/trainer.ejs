@@ -6,7 +6,7 @@
     <title>Кабінет тренера</title>
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/trainer_account.css">
+    <link rel="stylesheet" href="css/trainer.css">
 </head>
 <body style="
     background-image: url('images/background/back.jpg');
@@ -150,23 +150,8 @@
                     <button class="action-btn primary" onclick="editProfile()">
                         ✏️ Редагувати профіль
                     </button>
-                    <button class="action-btn primary" onclick="viewFullSchedule()">
-                        📅 Повний розклад
-                    </button>
-                    <button class="action-btn primary" onclick="manageClients()">
-                        👥 Управління клієнтами
-                    </button>
-                    <button class="action-btn secondary" onclick="viewStatistics()">
-                        📊 Детальна статистика
-                    </button>
-                    <button class="action-btn secondary" onclick="createWorkoutPlan()">
-                        🏋️‍♂️ Створити план тренувань
-                    </button>
-                    <button class="action-btn secondary" onclick="viewPayments()">
-                        💰 Фінанси та виплати
-                    </button>
-                    <button class="action-btn secondary" onclick="manageAvailability()">
-                        ⏰ Налаштувати доступність
+                    <button class="action-btn secondary" onclick="viewSchedule()">
+                        📅 Управління тренуваннями
                     </button>
                     <button class="action-btn logout" onclick="logout()">
                         🚪 Вийти
@@ -243,6 +228,6 @@
 
     <%- include('blocks/footer') -%>
 
-    <script src="js/trainer_account.js"></script>
+    <script src="js/trainer.js"></script>
 </body>
 </html>

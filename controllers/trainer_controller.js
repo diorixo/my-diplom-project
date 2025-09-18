@@ -51,12 +51,14 @@ exports.getTrainerData = async (req, res) => {
 
 exports.updateTrainer = async (req, res) => {
     try {
-        const { firstName, lastName, username, gender, email, phone, specialization, bio } = req.body;
+        const { firstname, lastname, username, gender, email, phone, specialization, bio } = req.body;
         const userId = req.user.userId;
 
+        await db.pool.query('BEGIN');
+
         // Оновлення таблиці users
-        const queryUser = `UPDATE users SET firstName = $1, lastName = $2, username = $3, gender = $4, email = $5, phone = $6 WHERE id = $7`;
-        const valuesUser = [firstName, lastName, username, gender, email, phone, userId];
+        const queryUser = `UPDATE users SET firstname = $1, lastname = $2, username = $3, gender = $4, email = $5, phone = $6 WHERE id = $7`;
+        const valuesUser = [firstname, lastname, username, gender, email, phone, userId];
         await db.pool.query(queryUser, valuesUser);
 
         // Оновлення таблиці trainers
@@ -64,11 +66,14 @@ exports.updateTrainer = async (req, res) => {
         const valuesTrainer = [specialization, bio, userId];
         await db.pool.query(queryTrainer, valuesTrainer);
 
+        await db.pool.query('COMMIT');
+
         res.json({ 
             success: true, 
             message: 'Профіль успішно оновлено' 
         });
     } catch (error) {
+        await db.pool.query('ROLLBACK');
         console.error('Error updating user:', error);
         res.status(500).json({ 
             success: false, 
@@ -76,3 +81,98 @@ exports.updateTrainer = async (req, res) => {
         });
     }
 };
+
+exports.getTrainerActiveTrainings = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        // Отримуємо ID тренера
+        const query = `SELECT id FROM trainers WHERE user_id = $1`;
+        const values = [userId];
+
+        const { rows } = await db.pool.query(query, values);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Тренер не знайдений' });
+        }
+        
+        const trainerId = rows[0].id;
+        
+        // Отримуємо тренування тренера з категоріями
+        const trainingsQuery = `
+            SELECT 
+                tr.id,
+                tr.name,
+                tr.duration,
+                tr.price,
+                tr.max_participants,
+                tr.current_participants,
+                tr.status,
+                c.category
+            FROM trainings tr
+            JOIN categories c ON tr.category_id = c.id
+            WHERE tr.trainer_id = $1 AND tr.status = 'active'
+            ORDER BY tr.name
+        `;
+        
+        const trainings = await db.pool.query(trainingsQuery, [trainerId]);
+        
+        res.json({
+            trainings: trainings.rows
+        });
+        
+    } catch (error) {
+        console.error('Error fetching trainer trainings:', error);
+        res.status(500).json({ error: 'Помилка сервера' });
+    }
+}
+
+exports.getTrainerTrainings = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        
+        // Отримуємо ID тренера
+        const query = `SELECT id FROM trainers WHERE user_id = $1`;
+        const values = [userId];
+
+        const { rows } = await db.pool.query(query, values);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Тренер не знайдений' });
+        }
+        
+        const trainerId = rows[0].id;
+        
+        // Отримуємо тренування тренера з категоріями
+        const trainingsQuery = `
+            SELECT 
+                tr.id,
+                tr.name,
+                tr.time,
+                tr.date,
+                tr.duration,
+                tr.price,
+                tr.max_participants,
+                tr.current_participants,
+                tr.status,
+                tr.category_id,
+                c.category
+            FROM trainings tr
+            JOIN categories c ON tr.category_id = c.id
+            WHERE tr.trainer_id = $1
+            ORDER BY 
+                CASE WHEN tr.status = 'active' THEN 1 ELSE 2 END,
+                tr.created_at DESC
+        `;
+        
+        const trainings = await db.pool.query(trainingsQuery, [trainerId]);
+        
+        res.json({
+            trainings: trainings.rows
+        });
+        
+    } catch (error) {
+        console.error('Error fetching all trainers trainings:', error);
+        res.status(500).json({ error: 'Помилка сервера' });
+    }
+}

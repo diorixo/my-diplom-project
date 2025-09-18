@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управління тренуваннями</title>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/manage_trainings.css">
+</head>
+<body style="
+    background-image: url('/images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    
+    <main>
+        <div class="trainings-container">
+            <!-- Заголовок -->
+            <div class="page-header">
+                <h1>📅 Управління тренуваннями</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openAddTrainingModal()">
+                        ➕ Додати тренування
+                    </button>
+                    <a href="/trainer" class="btn btn-secondary">
+                        🔙 Назад до профілю
+                    </a>
+                </div>
+            </div>
+
+            <!-- Вкладки -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('active')">
+                        ✅ Активні тренування
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('completed')">
+                        📋 Завершені тренування
+                    </button>
+                </div>
+            </div>
+
+            <!-- Завантаження -->
+            <div id="loadingMessage" class="loading">
+                Завантаження тренувань...
+            </div>
+
+            <!-- Повідомлення про помилку -->
+            <div id="errorMessage" class="error-message" style="display: none;">
+                Помилка завантаження тренувань
+            </div>
+
+            <!-- Активні тренування -->
+            <div id="activeTrainings" class="trainings-section">
+                <div class="trainings-grid" id="activeTrainingsGrid">
+                    <!-- Тренування будуть додані динамічно -->
+                </div>
+            </div>
+
+            <!-- Завершені тренування -->
+            <div id="completedTrainings" class="trainings-section" style="display: none;">
+                <div class="trainings-grid" id="completedTrainingsGrid">
+                    <!-- Тренування будуть додані динамічно -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно додавання/редагування тренування -->
+        <div id="trainingModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">➕ Додати нове тренування</h2>
+                    <span class="close">&times;</span>
+                </div>
+
+                <div class="success-message" id="trainingSuccessMessage">
+                    Тренування успішно збережено!
+                </div>
+
+                <form id="trainingForm">
+                    <input type="hidden" id="trainingId" name="trainingId">
+                    
+                    <div class="form-group">
+                        <label for="trainingName">Назва тренування:</label>
+                        <input type="text" id="trainingName" name="name" required 
+                               placeholder="Наприклад: Силове тренування для початківців">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoryId">Категорія:</label>
+                            <select id="categoryId" name="categoryId" required>
+                                <option value="">Оберіть категорію</option>
+                                <!-- Опції будуть додані динамічно -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Тривалість (хв):</label>
+                            <input type="number" id="duration" name="duration" required 
+                                   min="15" max="180" placeholder="60">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Ціна (₴):</label>
+                            <input type="number" id="price" name="price" required 
+                                   min="0" max="5000" placeholder="300">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxParticipants">Макс. учасників:</label>
+                            <input type="number" id="maxParticipants" name="maxParticipants" required 
+                                   min="1" max="50" placeholder="10">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="trainingDate">Дата тренування:</label>
+                            <input type="date" id="trainingDate" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="trainingTime">Час тренування:</label>
+                            <input type="time" id="trainingTime" name="time" required>
+                        </div>
+                    </div>
+
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeTrainingModal()">
+                            Скасувати
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            💾 Зберегти тренування
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальне вікно учасників -->
+        <div id="participantsModal" class="modal">
+            <div class="modal-content large">
+                <div class="modal-header">
+                    <h2 id="participantsModalTitle">👥 Учасники тренування</h2>
+                    <span class="close" onclick="closeParticipantsModal()">&times;</span>
+                </div>
+
+                <div class="participants-info">
+                    <div class="info-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Записано:</span>
+                            <span id="totalParticipants" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Прийшло:</span>
+                            <span id="attendedParticipants" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Не прийшло:</span>
+                            <span id="notAttendedParticipants" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="participants-list" id="participantsList">
+                    <!-- Учасники будуть додані динамічно -->
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-primary" onclick="saveAttendance()">
+                        💾 Зберегти відвідуваність
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeParticipantsModal()">
+                        Закрити
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно підтвердження видалення -->
+        <div id="deleteModal" class="modal">
+            <div class="modal-content small">
+                <div class="modal-header">
+                    <h2>🗑️ Видалення тренування</h2>
+                    <span class="close" onclick="closeDeleteModal()">&times;</span>
+                </div>
+
+                <div class="delete-warning">
+                    <p>Ви впевнені, що хочете видалити це тренування?</p>
+                    <p class="warning-text">Ця дія незворотна!</p>
+                    <p id="deleteTrainingName" class="training-name"></p>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        🗑️ Так, видалити
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                        Скасувати
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="/js/manage_trainings.js"></script>
+</body>
+</html>
