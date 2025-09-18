@@ -97,6 +97,8 @@ CREATE TABLE trainings (
     trainer_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     name VARCHAR(255),
+	date DATE NOT NULL,
+	time TIME NOT NULL,
     duration INTEGER NOT NULL,
 	price INTEGER NOT NULL,
 	max_participants INTEGER NOT NULL,
@@ -192,3 +194,15 @@ SELECT
             FROM users u
             JOIN trainers t ON u.id = t.user_id
             WHERE u.id = 2 AND u.role = 'trainer';
+
+
+SELECT DISTINCT
+    			t.id AS trainer_id,
+    			u.firstname,
+    			u.lastname
+			FROM trainers t
+			JOIN users u ON t.user_id = u.id
+			JOIN trainings tr ON tr.trainer_id = t.id
+			WHERE tr.status = 'active';
+
+SELECT id FROM trainers WHERE user_id = 2;
