@@ -58,7 +58,7 @@ app.get('/is_logged', authFunctions.isUserLoggedIn, (req, res) => {
 
 app.get('/logout', (req, res) => {
     res.clearCookie('access_token');
-    res.render('index');
+    res.redirect('/');
 });
 
 const PORT = 3000

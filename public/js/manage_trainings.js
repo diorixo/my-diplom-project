@@ -245,6 +245,7 @@ document.getElementById('trainingForm').addEventListener('submit', async functio
     
     const formData = new FormData(this);
     const trainingData = {
+        id: currentEditingId,
         name: formData.get('name'),
         category_id: formData.get('categoryId'),
         duration: parseInt(formData.get('duration')),
@@ -258,8 +259,8 @@ document.getElementById('trainingForm').addEventListener('submit', async functio
         let response;
         if (currentEditingId) {
             // Редагування
-            response = await fetch(`/trainer/training/${currentEditingId}`, {
-                method: 'PUT',
+            response = await fetch(`/trainer/update_training`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -301,11 +302,12 @@ async function completeTraining(trainingId) {
     }
     
     try {
-        const response = await fetch(`/trainer/training/${trainingId}/complete`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+        const response = await fetch(`/trainer/training_set_status_complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: trainingId })
         });
         
         if (response.ok) {
@@ -349,6 +351,7 @@ async function performDelete(trainingId) {
             closeDeleteModal();
             loadTrainings();
         } else {
+            console.error('Error deleting training:', response.statusText);
             throw new Error('Помилка видалення тренування');
         }
         
