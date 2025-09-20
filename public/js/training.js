@@ -52,7 +52,6 @@ const loadCategories = async () => {
 
         const result = await response.json();
         categories = result.rows
-        console.log(categories);
 
         // Заповнюємо список категорій у фільтрі
         const categorySelect = document.getElementById('typeFilter');
@@ -79,7 +78,6 @@ const loadTrainers = async () => {
 
         const result = await response.json();
         trainers = result.rows;
-        console.log(trainers);
 
         if (trainers.length !== 0) {
             // Заповнюємо список тренерів у фільтрі
@@ -108,7 +106,6 @@ const loadTrainings = async () => {
 
         const result = await response.json();
         trainings = result.rows;
-        console.log(trainings);
 
         // Формуємо фінальний масив
         const trainingsAllData = trainings.map((t) => {
@@ -142,7 +139,6 @@ const loadTrainings = async () => {
         });
 
         trainings = trainingsAllData;
-        console.log(trainings[0]);
 
         document.getElementById('loadingSchedule').style.display = 'none';
         document.getElementById('scheduleContent').style.display = 'block';
@@ -367,7 +363,7 @@ function openBookingModal(trainingId) {
     document.getElementById('modalTrainingType').textContent = training.name;
     document.getElementById('modalTrainer').textContent = training.trainer.name;
     document.getElementById('modalDateTime').textContent = 
-        `${training.date.toLocaleDateString('uk-UA')} о ${training.time}`;
+        `${training.date.toLocaleDateString('uk-UA')} о ${training.time.slice(0, 5)}`;
     document.getElementById('modalDuration').textContent = training.duration;
     document.getElementById('modalPrice').textContent = training.price + ' грн';
     
@@ -397,43 +393,40 @@ document.addEventListener('DOMContentLoaded', function() {
             const notes = document.getElementById('bookingNotes').value;
             
             try {
-                // Симуляція API виклику
-                const response = await fetch('/book_training', {
+                const response = await fetch('/traininng/book_training', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        trainingId: selectedBooking.id,
-                        notes: notes,
-                        trainingType: selectedBooking.type,
-                        trainerId: selectedBooking.trainer.id,
-                        date: selectedBooking.date.toISOString(),
-                        time: selectedBooking.time
+                        training_id: selectedBooking.id,
+                        notes: notes
                     })
                 });
                 
                 if (response.ok) {
-                    // Оновлюємо статус тренування
-                    selectedBooking.isBooked = true;
-                    selectedBooking.currentParticipants += 1;
-                    if (selectedBooking.currentParticipants >= selectedBooking.maxParticipants) {
-                        selectedBooking.status = 'full';
-                    }
+                    // // Оновлюємо статус тренування
+                    // selectedBooking.isBooked = true;
+                    // selectedBooking.currentParticipants += 1;
+                    // if (selectedBooking.currentParticipants >= selectedBooking.maxParticipants) {
+                    //     selectedBooking.status = 'full';
+                    // }
                     
-                    // Додаємо до моїх записів
-                    userBookings.push({
-                        id: Date.now(),
-                        training: selectedBooking,
-                        notes: notes,
-                        bookingDate: new Date(),
-                        status: 'active'
-                    });
+                    // // Додаємо до моїх записів
+                    // userBookings.push({
+                    //     id: Date.now(),
+                    //     training: selectedBooking,
+                    //     notes: notes,
+                    //     bookingDate: new Date(),
+                    //     status: 'active'
+                    // });
                     
                     // Показуємо повідомлення про успіх
                     document.getElementById('bookingSuccess').style.display = 'block';
                     
                     // Оновлюємо відображення
+                    init();
+                    loadUserBookings();
                     displayTrainings();
                     displayUserBookings();
                     
@@ -457,29 +450,31 @@ document.addEventListener('DOMContentLoaded', function() {
 // Завантаження записів користувача
 async function loadUserBookings() {
     try {
-        // Симуляція API виклику
-        userBookings = [
-            {
-                id: 1,
-                training: {
-                    name: 'Йога',
-                    trainer: { name: 'Марія Іваненко' },
-                    date: new Date(2024, 11, 20),
-                    time: '18:00',
-                    duration: '75 хв'
-                },
-                notes: 'Перше заняття',
-                bookingDate: new Date(2024, 11, 15),
-                status: 'active'
+        const response = await fetch('/user/bookings'); // ендпоінт, який ти зробив у бекенді
+        if (!response.ok) {
+            throw new Error('Помилка завантаження: ' + response.status);
+        }
+
+        const data = await response.json();
+
+        // Конвертуємо дати у Date-об’єкти
+        userBookings = data.map(booking => ({
+            ...booking,
+            bookingDate: new Date(booking.bookingDate),
+            training: {
+                ...booking.training,
+                date: new Date(booking.training.date),
+                time: booking.training.time.slice(0, 5) // залишаємо тільки HH:MM
             }
-        ];
-        
+        }));
+
         displayUserBookings();
-        
+
     } catch (error) {
         console.error('Помилка завантаження записів:', error);
     }
 }
+
 
 // Відображення записів користувача
 function displayUserBookings() {
@@ -578,33 +573,21 @@ async function confirmCancel() {
     if (!selectedBooking) return;
     
     try {
-        // Симуляція API виклику
-        const response = await fetch('/cancel_booking', {
+        const response = await fetch('/user/cancel_booking', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                bookingId: selectedBooking.id
+                id: selectedBooking.id
             })
         });
         
         if (response.ok) {
-            // Оновлюємо статус запису
-            selectedBooking.status = 'cancelled';
-            
-            // Оновлюємо тренування
-            const training = trainings.find(t => t.id === selectedBooking.training.id);
-            if (training) {
-                training.isBooked = false;
-                training.currentParticipants = Math.max(0, training.currentParticipants - 1);
-                training.status = 'available';
-            }
-            
-            // Видаляємо з активних записів
-            userBookings = userBookings.filter(b => b.id !== selectedBooking.id);
             
             // Оновлюємо відображення
+            init();
+            loadUserBookings();
             displayTrainings();
             displayUserBookings();
             

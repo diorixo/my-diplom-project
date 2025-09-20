@@ -16,6 +16,7 @@ app.use(require('./routes/user_route'))
 app.use(require('./routes/training_route'))
 app.use(require('./routes/category_route'))
 app.use(require('./routes/trainer_route'))
+app.use(require('./routes/booking_route'))
 
 app.get('/', (req, res) => {
     res.render('index')
