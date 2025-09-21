@@ -193,3 +193,28 @@ exports.setTrainingStatusComplete = async (req, res) => {
 		res.status(500).json({ error: 'Помилка при оновленні статусу тренування' });
 	}
 };
+
+exports.getTrainingParticipants = async (req, res) => {
+	try {
+		const query = `
+			SELECT DISTINCT
+    			u.firstname,
+    			u.lastname,
+                u.email,
+                u.phone,
+				b.created_at,
+                b.attendance
+			FROM bookings b
+			JOIN users u ON b.user_id = u.id
+			WHERE b.training_id = $1;
+		`;
+		const { rows } = await db.pool.query(query, [req.params.trainingId]);
+		// if (rows.length === 0) {
+		// 	return res.status(404).json({ error: 'Trainings not found' });
+		// }
+        return res.status(200).json({ participants: rows });
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: 'Internal server error' });
+	}
+};

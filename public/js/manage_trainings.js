@@ -431,7 +431,7 @@ function displayParticipants() {
                 <div class="participant-name">${participant.firstname} ${participant.lastname}</div>
                 <div class="participant-details">
                     📧 ${participant.email} | 📞 ${participant.phone}<br>
-                    📅 Записався: ${new Date(participant.booking_date).toLocaleDateString('uk-UA')}
+                    📅 Записався: ${new Date(participant.created_at).toLocaleDateString('uk-UA')}
                     ${participant.notes ? `<br>💬 ${participant.notes}` : ''}
                 </div>
             </div>

@@ -94,10 +94,40 @@ const loadTrainers = async () => {
     }
 }
 
+// Функція перевірки чи тренування вже минуло або розпочалося
+function isTrainingExpired(training) {
+    const now = new Date();
+    const trainingDateTime = new Date(training.date);
+    const [hours, minutes] = training.time.split(':');
+    trainingDateTime.setHours(parseInt(hours), parseInt(minutes));
+    
+    // Тренування вважається минулим, якщо воно вже розпочалося
+    return now >= trainingDateTime;
+}
+
+// Функція перевірки чи можна записатися на тренування
+function canBookTraining(training) {
+    // Перевіряємо чи тренування не переповнене
+    if (training.status === 'full') {
+        return false;
+    }
+    
+    // Перевіряємо чи користувач вже записаний
+    if (training.isBooked) {
+        return false;
+    }
+    
+    // Перевіряємо чи тренування не минуло
+    if (isTrainingExpired(training)) {
+        return false;
+    }
+    
+    return true;
+}
+
 // Завантаження тренувань
 const loadTrainings = async () => {
     try {
-        // await new Promise(resolve => setTimeout(resolve, 1000));
         const response = await fetch('/get_active_trainings');
 
         if (!response.ok) {
@@ -112,7 +142,7 @@ const loadTrainings = async () => {
             const trainer = trainers.find(tr => tr.id === t.trainer_id);
             const category = categories.find(cat => cat.id === t.category_id);
         
-            return {
+            const training = {
                 id: t.id,
                 type: category ? category.category : 'unknown',
                 name: t.name,
@@ -133,9 +163,19 @@ const loadTrainings = async () => {
                 price: t.price,
                 maxParticipants: t.max_participants,
                 currentParticipants: t.current_participants,
-                status: t.current_participants >= t.max_participants ? 'full' : 'available',
                 isBooked: false
             };
+
+            // Визначаємо статус тренування
+            if (isTrainingExpired(training)) {
+                training.status = 'expired';
+            } else if (training.currentParticipants >= training.maxParticipants) {
+                training.status = 'full';
+            } else {
+                training.status = 'available';
+            }
+
+            return training;
         });
 
         trainings = trainingsAllData;
@@ -182,10 +222,30 @@ function createTrainingCard(training) {
         card.classList.add('booked');
     }
     
-    const statusText = training.status === 'full' ? 'Немає місць' : 
-                     training.isBooked ? 'Записаний' : 'Доступно';
-    const statusClass = training.status === 'full' ? 'status-full' : 
-                       training.isBooked ? 'status-booked' : 'status-available';
+    // Визначаємо текст та клас статусу
+    let statusText, statusClass, buttonText, isDisabled;
+    
+    if (training.status === 'expired') {
+        statusText = 'Минуло';
+        statusClass = 'status-expired';
+        buttonText = '⏰ Минуло';
+        isDisabled = true;
+    } else if (training.status === 'full') {
+        statusText = 'Немає місць';
+        statusClass = 'status-full';
+        buttonText = '❌ Немає місць';
+        isDisabled = true;
+    } else if (training.isBooked) {
+        statusText = 'Записаний';
+        statusClass = 'status-booked';
+        buttonText = '✅ Записаний';
+        isDisabled = true;
+    } else {
+        statusText = 'Доступно';
+        statusClass = 'status-available';
+        buttonText = '📝 Записатися';
+        isDisabled = false;
+    }
     
     card.innerHTML = `
         <div class="status-badge ${statusClass}">${statusText}</div>
@@ -209,8 +269,8 @@ function createTrainingCard(training) {
         </div>
         <button class="book-btn" 
                 onclick="openBookingModal(${training.id})"
-                ${training.status === 'full' || training.isBooked ? 'disabled' : ''}>
-            ${training.isBooked ? '✅ Записаний' : training.status === 'full' ? '❌ Немає місць' : '📝 Записатися'}
+                ${isDisabled ? 'disabled' : ''}>
+            ${buttonText}
         </button>
     `;
     
@@ -353,7 +413,19 @@ function updateDateDisplay() {
 // Відкриття модального вікна бронювання
 function openBookingModal(trainingId) {
     const training = trainings.find(t => t.id === trainingId);
-    if (!training || training.status === 'full' || training.isBooked) {
+    
+    // Перевіряємо чи можна записатися на це тренування
+    if (!training || !canBookTraining(training)) {
+        // Показуємо відповідне повідомлення залежно від причини
+        if (training.status === 'full') {
+            alert('❌ На це тренування немає вільних місць');
+        } else if (training.isBooked) {
+            alert('✅ Ви вже записані на це тренування');
+        } else if (training.status === 'expired') {
+            alert('⏰ Це тренування вже минуло або розпочалося');
+        } else {
+            alert('❌ Неможливо записатися на це тренування');
+        }
         return;
     }
     
@@ -390,6 +462,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!selectedBooking) return;
             
+            // Додаткова перевірка перед відправкою
+            if (!canBookTraining(selectedBooking)) {
+                alert('❌ Неможливо записатися на це тренування (можливо, воно вже минуло або переповнене)');
+                closeModal();
+                return;
+            }
+            
             const notes = document.getElementById('bookingNotes').value;
             
             try {
@@ -405,22 +484,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (response.ok) {
-                    // // Оновлюємо статус тренування
-                    // selectedBooking.isBooked = true;
-                    // selectedBooking.currentParticipants += 1;
-                    // if (selectedBooking.currentParticipants >= selectedBooking.maxParticipants) {
-                    //     selectedBooking.status = 'full';
-                    // }
-                    
-                    // // Додаємо до моїх записів
-                    // userBookings.push({
-                    //     id: Date.now(),
-                    //     training: selectedBooking,
-                    //     notes: notes,
-                    //     bookingDate: new Date(),
-                    //     status: 'active'
-                    // });
-                    
                     // Показуємо повідомлення про успіх
                     document.getElementById('bookingSuccess').style.display = 'block';
                     
@@ -436,12 +499,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 2000);
                     
                 } else {
-                    throw new Error('Помилка бронювання');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Помилка бронювання');
                 }
                 
             } catch (error) {
                 console.error('Помилка бронювання:', error);
-                alert('Помилка при створенні запису. Спробуйте ще раз.');
+                alert('Помилка при створенні запису: ' + error.message);
             }
         });
     }
@@ -450,14 +514,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Завантаження записів користувача
 async function loadUserBookings() {
     try {
-        const response = await fetch('/user/bookings'); // ендпоінт, який ти зробив у бекенді
+        const response = await fetch('/user/bookings');
         if (!response.ok) {
             throw new Error('Помилка завантаження: ' + response.status);
         }
 
         const data = await response.json();
 
-        // Конвертуємо дати у Date-об’єкти
+        // Конвертуємо дати у Date-об'єкти
         userBookings = data.map(booking => ({
             ...booking,
             bookingDate: new Date(booking.bookingDate),
@@ -474,7 +538,6 @@ async function loadUserBookings() {
         console.error('Помилка завантаження записів:', error);
     }
 }
-
 
 // Відображення записів користувача
 function displayUserBookings() {
@@ -530,7 +593,7 @@ function canCancelBooking(booking) {
     const timeDiff = trainingDateTime.getTime() - now.getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
     
-    return hoursDiff > 2 && booking.status === 'active';
+    return hoursDiff > 2;
 }
 
 // Відкриття модального вікна скасування
@@ -584,7 +647,6 @@ async function confirmCancel() {
         });
         
         if (response.ok) {
-            
             // Оновлюємо відображення
             init();
             loadUserBookings();
@@ -597,12 +659,13 @@ async function confirmCancel() {
             alert('✅ Запис успішно скасовано!');
             
         } else {
-            throw new Error('Помилка скасування');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Помилка скасування');
         }
         
     } catch (error) {
         console.error('Помилка скасування:', error);
-        alert('Помилка при скасуванні запису. Спробуйте ще раз.');
+        alert('Помилка при скасуванні запису: ' + error.message);
     }
 }
 

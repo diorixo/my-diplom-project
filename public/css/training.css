@@ -207,6 +207,31 @@
     cursor: not-allowed;
 }
 
+.training-card.expired {
+    border-color: #6c757d;
+    background: #f8f9fa;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.training-card.expired .training-header,
+.training-card.expired .trainer-info,
+.training-card.expired .training-details,
+.training-card.expired .participants {
+    opacity: 0.6;
+}
+
+.training-card.expired .training-time {
+    background: #6c757d;
+    color: white;
+}
+
+.training-card.expired .status-badge {
+    background: #e2e3e5;
+    color: #495057;
+    font-style: italic;
+}
+
 .training-header {
     display: flex;
     justify-content: space-between;
@@ -291,8 +316,16 @@
 }
 
 .book-btn:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
+    background: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    transform: none !important;
+}
+
+.book-btn:disabled:hover {
+    background: #6c757d !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .status-badge {
@@ -318,6 +351,11 @@
 .status-full {
     background: #f8d7da;
     color: #721c24;
+}
+
+.status-expired {
+    background: #e2e3e5;
+    color: #495057;
 }
 
 /* Мої записи */

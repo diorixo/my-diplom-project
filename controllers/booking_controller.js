@@ -60,7 +60,7 @@ exports.getUserBookings = async (req, res) => {
                 b.id AS id,
                 b.notes,
                 b.created_at AS bookingDate,
-                b.status,
+                b.attendance,
                 t.name AS name,
                 t.date,
                 t.time,
@@ -70,7 +70,7 @@ exports.getUserBookings = async (req, res) => {
             JOIN trainings t ON b.training_id = t.id
             JOIN trainers tr ON t.trainer_id = tr.id
             JOIN users u ON tr.user_id = u.id
-            WHERE b.user_id = $1 AND b.status = 'active';
+            WHERE b.user_id = $1;
         `;
 
         const { rows } = await db.pool.query(query, [user_id]);
@@ -86,7 +86,7 @@ exports.getUserBookings = async (req, res) => {
             },
             notes: row.notes,
             bookingDate: row.bookingdate,
-            status: row.status
+            status: row.attandence
         }));
 
         return res.status(200).json(result);
