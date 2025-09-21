@@ -144,6 +144,15 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 select * from trainings order by id;
+UPDATE trainings SET 
+			category_id = 1,
+			name = 'New',
+			date = '2025-10-10',
+			time = '10:00:00',
+			duration = 33,
+			price = 22,
+			max_participants = 3
+		WHERE id = 10 AND trainer_id = 1 RETURNING *;
 -------------------------------------------------------------------------------
 
 -- Таблиця записів на тренування --
@@ -153,7 +162,7 @@ CREATE TABLE bookings (
     user_id INTEGER NOT NULL,
     training_id INTEGER NOT NULL,
     notes VARCHAR(255),
-	status VARCHAR(50) DEFAULT 'active',
+	attendance VARCHAR(50) DEFAULT 'pending',
 	created_at TIMESTAMP DEFAULT now() NOT NULL,
 	updated_at TIMESTAMP DEFAULT now() NOT NULL,
 
