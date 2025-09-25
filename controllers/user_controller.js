@@ -70,6 +70,17 @@ exports.getUserData = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         const user = rows[0];
+
+        const visit_result = await db.pool.query(`
+            SELECT COUNT(DISTINCT b.training_id) AS visit_count
+            FROM bookings b
+            JOIN trainings t ON b.training_id = t.id
+            WHERE b.user_id = $1
+                AND b.attendance = 'attended'
+                AND date_trunc('month', t.date) = date_trunc('month', CURRENT_DATE);
+        `, [userId]);
+        const visit_count = visit_result.rows[0].visit_count;
+
         return res.status(200).json({ 
             userId: user.id, 
             username: user.username,
@@ -79,7 +90,8 @@ exports.getUserData = async (req, res) => {
             gender: user.gender,
             email: user.email,
             phone: user.phone,
-            created_at: user.created_date
+            created_at: user.created_date,
+            visit_count: visit_count
         });
     } catch (err) {
         console.error(err);

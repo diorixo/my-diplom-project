@@ -75,6 +75,28 @@ const loadTrainerTrainings = async () => {
 };
 
 // Відображення тренувань тренера замість розкладу
+// const displayTrainerTrainings = (trainings) => {
+//     const scheduleContainer = document.getElementById('todaySchedule');
+    
+//     if (!trainings || trainings.length === 0) {
+//         scheduleContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Немає активних тренувань</p>';
+//         return;
+//     }
+    
+//     scheduleContainer.innerHTML = '';
+    
+//     trainings.forEach(training => {
+//         const trainingElement = document.createElement('div');
+//         trainingElement.className = 'schedule-item';
+//         trainingElement.innerHTML = `
+//             <span class="time">${training.duration} хв</span>
+//             <span class="client">${training.name}</span>
+//             <span class="type">${training.current_participants}/${training.max_participants}</span>
+//         `;
+//         scheduleContainer.appendChild(trainingElement);
+//     });
+// };
+
 const displayTrainerTrainings = (trainings) => {
     const scheduleContainer = document.getElementById('todaySchedule');
     
@@ -89,10 +111,20 @@ const displayTrainerTrainings = (trainings) => {
         const trainingElement = document.createElement('div');
         trainingElement.className = 'schedule-item';
         trainingElement.innerHTML = `
-            <span class="time">${training.duration} хв</span>
-            <span class="client">${training.name}</span>
-            <span class="type">${training.current_participants}/${training.max_participants}</span>
-        `;
+    <div class="schedule-left">
+        <span class="date-time">${formatDate(training.date)} ${formatTime(training.time)}</span>
+        <span class="training-name">${training.name}</span>
+        <span class="category">${training.category}</span>
+    </div>
+    <div class="schedule-middle">
+        👥 ${training.current_participants}/${training.max_participants}
+    </div>
+    <div class="schedule-right">
+        <span class="price">💰 ${training.price}₴</span>
+        <span class="duration">⏱ ${training.duration} хв</span>
+    </div>
+`;
+
         scheduleContainer.appendChild(trainingElement);
     });
 };
@@ -229,8 +261,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // місяці з 0
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+}
+
+function formatTime(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    return `${hours}:${minutes}`;
+}
+
 // Ініціалізація
 fetchTrainerData();
-
-// Оновлюємо живі дані кожні 2 хвилини
-// setInterval(updateLiveStatistics, 120000);

@@ -137,6 +137,20 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Функція для зменшення current_participants при cancel
+CREATE OR REPLACE FUNCTION decrease_participants_on_cancel()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Перевіряємо, чи attendance змінилось на 'cancelled'
+    IF NEW.attendance = 'cancelled' AND OLD.attendance <> 'cancelled' THEN
+        UPDATE trainings
+        SET current_participants = current_participants - 1
+        WHERE id = NEW.training_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Тригер для таблиці trainings
 CREATE TRIGGER set_trainings_updated_at
 BEFORE UPDATE ON trainings
@@ -171,13 +185,19 @@ CREATE TABLE bookings (
 	FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE
 );
 
--- Тригер для таблиці bookings
+-- Тригери для таблиці bookings
+DROP TRIGGER IF EXISTS bookings_update_trainings ON bookings;
 CREATE TRIGGER bookings_update_trainings
 AFTER INSERT OR DELETE ON bookings
 FOR EACH ROW
 EXECUTE FUNCTION update_training_participants();
 
--- Тригер для таблиці bookings
+DROP TRIGGER IF EXISTS bookings_attendance_cancel ON bookings;
+CREATE TRIGGER bookings_attendance_cancel
+AFTER UPDATE OF attendance ON bookings
+FOR EACH ROW
+EXECUTE FUNCTION decrease_participants_on_cancel();
+
 CREATE TRIGGER set_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW
@@ -215,3 +235,26 @@ SELECT DISTINCT
 			WHERE tr.status = 'active';
 
 SELECT id FROM trainers WHERE user_id = 2;
+
+SELECT COUNT(*) AS visit_count
+            FROM bookings
+            WHERE user_id = 1
+            AND attendance = 'attended'
+            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)
+
+
+SELECT 
+                b.id AS id,
+                b.notes,
+                b.created_at AS bookingDate,
+                b.attendance,
+                t.name AS name,
+                t.date,
+                t.time,
+                t.duration,
+                u.firstname || ' ' || u.lastname AS trainer_name
+            FROM bookings b
+            JOIN trainings t ON b.training_id = t.id
+            JOIN trainers tr ON t.trainer_id = tr.id
+            JOIN users u ON tr.user_id = u.id
+            WHERE b.user_id = 1;

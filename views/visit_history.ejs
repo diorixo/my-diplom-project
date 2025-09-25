@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Історія відвідувань</title>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/visit_history.css">
+</head>
+<body style="
+    background-image: url('/images/background/back.jpg');
+    background-attachment: fixed; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+    background-position: center center;
+    min-height: 100vh;
+">
+    <%- include('blocks/header') -%>
+    
+    <main>
+        <div class="history-container">
+            <!-- Заголовок -->
+            <div class="page-header">
+                <h1>📊 Історія відвідувань</h1>
+                <p>Перегляньте всі ваші попередні тренування та статистику</p>
+            </div>
+
+            <!-- Статистика -->
+            <div class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏃‍♂️</div>
+                        <div class="stat-info">
+                            <h3 id="totalVisits">0</h3>
+                            <p>Всього відвідувань</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3 id="totalHours">0</h3>
+                            <p>Загальний час тренувань</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3 id="currentMonth">0</h3>
+                            <p>Цього місяця</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-info">
+                            <h3 id="streak">0</h3>
+                            <p>Днів поспіль</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Фільтри -->
+            <div class="filters-section">
+                <h2>🔍 Фільтри</h2>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="periodFilter">Період:</label>
+                        <select id="periodFilter">
+                            <option value="all">Весь час</option>
+                            <option value="current-month">Поточний місяць</option>
+                            <option value="last-month">Минулий місяць</option>
+                            <option value="last-3-months">Останні 3 місяці</option>
+                            <option value="current-year">Поточний рік</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="typeHistoryFilter">Тип тренування:</label>
+                        <select id="typeHistoryFilter">
+                            <option value="">Всі види</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="trainerHistoryFilter">Тренер:</label>
+                        <select id="trainerHistoryFilter">
+                            <option value="">Всі тренери</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="statusFilter">Статус:</label>
+                        <select id="statusFilter">
+                            <option value="">Всі статуси</option>
+                            <option value="completed">Відвідано</option>
+                            <option value="missed">Пропущено</option>
+                            <option value="cancelled">Скасовано</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="apply-filters-btn" onclick="applyHistoryFilters()">Застосувати фільтри</button>
+            </div>
+
+            <!-- Історія відвідувань -->
+            <div class="history-section">
+                <div class="section-header">
+                    <h2>📋 Історія тренувань</h2>
+                    <div class="view-options">
+                        <button class="view-btn active" onclick="setHistoryView('list')">📋 Список</button>
+                        <button class="view-btn" onclick="setHistoryView('calendar')">📅 Календар</button>
+                    </div>
+                </div>
+
+                <div id="loadingHistory" class="loading">
+                    Завантаження історії...
+                </div>
+
+                <div id="historyContent" style="display: none;">
+                    <!-- Список відвідувань -->
+                    <div id="historyList" class="history-list">
+                        <!-- Записи будуть додані динамічно -->
+                    </div>
+
+                    <!-- Календарний вигляд -->
+                    <div id="calendarView" class="calendar-view" style="display: none;">
+                        <div class="calendar-navigation">
+                            <button class="nav-btn" onclick="changeMonth(-1)">←</button>
+                            <span id="currentMonthDisplay">Поточний місяць</span>
+                            <button class="nav-btn" onclick="changeMonth(1)">→</button>
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid">
+                            <!-- Календар буде згенеровано динамічно -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пагінація -->
+                <div id="pagination" class="pagination" style="display: none;">
+                    <button id="prevPage" class="page-btn" onclick="changePage(-1)">← Попередня</button>
+                    <span id="pageInfo" class="page-info">Сторінка 1 з 1</span>
+                    <button id="nextPage" class="page-btn" onclick="changePage(1)">Наступна →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно деталей тренування -->
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📝 Деталі тренування</h2>
+                    <span class="close" onclick="closeDetailModal()">&times;</span>
+                </div>
+
+                <div id="trainingDetails" class="training-details-modal">
+                    <!-- Деталі будуть заповнені динамічно -->
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeDetailModal()">Закрити</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальне вікно оцінки тренування -->
+        <div id="ratingModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⭐ Оцініти тренування</h2>
+                    <span class="close" onclick="closeRatingModal()">&times;</span>
+                </div>
+
+                <form id="ratingForm">
+                    <div class="rating-section">
+                        <h3 id="ratingTrainingName">Назва тренування</h3>
+                        <div class="rating-stars">
+                            <span class="star" data-rating="1">⭐</span>
+                            <span class="star" data-rating="2">⭐</span>
+                            <span class="star" data-rating="3">⭐</span>
+                            <span class="star" data-rating="4">⭐</span>
+                            <span class="star" data-rating="5">⭐</span>
+                        </div>
+                        <p id="ratingText">Оберіть оцінку</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewText">Відгук (необов'язково):</label>
+                        <textarea id="reviewText" name="review" rows="4" placeholder="Поділіться вашими враженнями про тренування..."></textarea>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeRatingModal()">Скасувати</button>
+                        <button type="submit" class="btn btn-primary">Залишити оцінку</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="/js/visit_history.js"></script>
+</body>
+</html>

@@ -22,31 +22,32 @@ exports.cancelBooking = async (req, res) => {
         const user_id = req.user.userId;
 
         const query = `
-                    DELETE FROM bookings 
-                    WHERE id = $1 AND user_id = $2
-                    RETURNING *;
-                `;
+            UPDATE bookings
+            SET attendance = 'cancelled'
+            WHERE id = $1 AND user_id = $2
+            RETURNING *;
+        `;
         const values = [id, user_id];
         const { rows } = await db.pool.query(query, values);
-        
+
         if (!rows.length) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Бронювання не знайдено або доступ заборонено' 
+            return res.status(404).json({
+                success: false,
+                message: 'Бронювання не знайдено або доступ заборонено'
             });
         }
-        
-        res.json({ 
-            success: true, 
-            message: 'Бронювання успішно видалено', 
-            training: rows[0] 
+
+        res.json({
+            success: true,
+            message: 'Бронювання успішно скасовано',
+            booking: rows[0]
         });
-        
+
     } catch (error) {
-        console.error('Error deleting booking', error);
+        console.error('Error cancelling booking:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка при видаленні бронювання'
+            message: 'Помилка при скасуванні бронювання'
         });
     }
 };
@@ -65,6 +66,7 @@ exports.getUserBookings = async (req, res) => {
                 t.date,
                 t.time,
                 t.duration,
+                t.price,
                 u.firstname || ' ' || u.lastname AS trainer_name
             FROM bookings b
             JOIN trainings t ON b.training_id = t.id
@@ -82,7 +84,8 @@ exports.getUserBookings = async (req, res) => {
                 trainer: { name: row.trainer_name },
                 date: row.date,
                 time: row.time,
-                duration: `${row.duration} хв`
+                duration: `${row.duration} хв`,
+                price: `${row.price} грн`
             },
             notes: row.notes,
             bookingDate: row.bookingdate,
@@ -111,7 +114,8 @@ exports.getUserAllBookings = async (req, res) => {
                 t.date,
                 t.time,
                 t.duration,
-                u.firstname || ' ' || u.lastname AS trainer_name
+                u.firstname || ' ' || u.lastname AS trainer_name,
+                t.price
             FROM bookings b
             JOIN trainings t ON b.training_id = t.id
             JOIN trainers tr ON t.trainer_id = tr.id
@@ -123,16 +127,18 @@ exports.getUserAllBookings = async (req, res) => {
 
         const result = rows.map(row => ({
             id: row.id,
-            training: {
-                name: row.name,
-                trainer: { name: row.trainer_name },
-                date: row.date,
-                time: row.time,
-                duration: `${row.duration} хв`
-            },
-            notes: row.notes,
+            trainingName: row.name,
+            trainerName: row.trainer_name,
+            date: row.date,
+            time: row.time,
+            duration: `${row.duration} хв`,
+            status: row.attendance,
+            price: row.price,
+            rating: '',
+            review: '',
             bookingDate: row.bookingdate,
-            status: row.attandence
+            completedAt: row.attandence === 'attended' ? row.date : null,
+            notes: row.notes
         }));
 
         return res.status(200).json(result);

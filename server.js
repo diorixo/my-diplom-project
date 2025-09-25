@@ -42,6 +42,14 @@ app.get('/training', authFunctions.authenticateToken, (req, res) => {
     res.render('training')
 })
 
+app.get('/training', authFunctions.authenticateToken, (req, res) => {
+    res.render('training')
+})
+
+app.get('/user/visit_history', authFunctions.authenticateToken, (req, res) => {
+    res.render('visit_history')
+})
+
 //не використвується
 // app.get('/user_data', authFunctions.authenticateToken, (req, res) => {
 //     const userId = req.user.userId;

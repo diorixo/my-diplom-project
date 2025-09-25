@@ -207,7 +207,8 @@ exports.getTrainingParticipants = async (req, res) => {
                 b.attendance
 			FROM bookings b
 			JOIN users u ON b.user_id = u.id
-			WHERE b.training_id = $1;
+			WHERE b.training_id = $1
+            AND b.attendance <> 'cancelled';
 		`;
 		const { rows } = await db.pool.query(query, [req.params.trainingId]);
 		// if (rows.length === 0) {

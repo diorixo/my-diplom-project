@@ -193,7 +193,7 @@
 }
 
 /* Розклад */
-.schedule-list {
+/* .schedule-list {
     max-height: 300px;
     overflow-y: auto;
 }
@@ -232,6 +232,92 @@
     border-radius: 15px;
     font-size: 0.9em;
     color: #7f8c8d;
+} */
+
+.schedule-list {
+    max-height: 400px; /* обмежує висоту блоку */
+    overflow-y: auto;  /* вертикальна прокрутка */
+    padding-right: 5px;
+    scroll-behavior: smooth; /* плавний скрол */
+}
+
+/* Кастомний скрол для Webkit-браузерів */
+.schedule-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.schedule-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 8px;
+}
+
+.schedule-list::-webkit-scrollbar-thumb {
+    background: #f39c12;;
+    border-radius: 8px;
+}
+
+.schedule-list::-webkit-scrollbar-thumb:hover {
+    background: #f8b549;
+}
+
+.schedule-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.schedule-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.schedule-left .date-time {
+    font-size: 0.9em;
+    color: #7f8c8d;
+}
+
+.schedule-left .training-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.schedule-left .category {
+    font-size: 0.9em;
+    color: #2980b9;
+    margin-top: 3px;
+}
+
+.schedule-middle {
+    font-size: 0.9em;
+    color: #7f8c8d;
+}
+
+.schedule-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.schedule-right .price {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.schedule-right .duration {
+    font-size: 0.85em;
+    color: #f39c12;
+    background: #fdf6e3;
+    padding: 3px 8px;
+    border-radius: 12px;
 }
 
 /* Відгуки */
@@ -367,6 +453,7 @@
 .modal {
     display: none;
     position: fixed;
+    overflow: auto;
     z-index: 1000;
     left: 0;
     top: 0;

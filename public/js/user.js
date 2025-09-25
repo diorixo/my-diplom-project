@@ -25,6 +25,7 @@ const fetchUserData = async () => {
         document.getElementById('email').textContent = data.email;
         document.getElementById('phone').textContent = data.phone;
         document.getElementById('memberSince').textContent = data.created_at;
+        document.getElementById('visitCount').textContent = data.visit_count; 
         
         // Встановлюємо відповідне зображення залежно від статі
         const profileImage = document.getElementById('profileImage');
@@ -85,8 +86,7 @@ function bookTraining() {
 }
 
 function viewHistory() {
-    alert('Перенаправлення на історію відвідувань...');
-    // window.location.href = '/visit-history';
+    window.location.href = '/user/visit_history';
 }
 
 function paymentHistory() {
@@ -101,17 +101,17 @@ function logout() {
 }
 
 // Симуляція живих даних (можна замінити на реальні API виклики)
-function updateLiveData() {
-    // Оновлюємо статистику відвідувань (симуляція)
-    const visitCount = Math.floor(Math.random() * 30) + 10;
-    document.getElementById('visitCount').textContent = visitCount;
+// function updateLiveData() {
+//     // Оновлюємо статистику відвідувань (симуляція)
+//     const visitCount = Math.floor(Math.random() * 30) + 10;
+//     document.getElementById('visitCount').textContent = visitCount;
     
-    // Оновлюємо прогрес
-    const progress = Math.floor(Math.random() * 100);
-    const progressBar = document.getElementById('monthProgress');
-    progressBar.style.width = progress + '%';
-    progressBar.textContent = progress + '%';
-}
+//     // Оновлюємо прогрес
+//     const progress = Math.floor(Math.random() * 100);
+//     const progressBar = document.getElementById('monthProgress');
+//     progressBar.style.width = progress + '%';
+//     progressBar.textContent = progress + '%';
+// }
 
 // Ініціалізація модального вікна
 const modal = document.getElementById('editModal');

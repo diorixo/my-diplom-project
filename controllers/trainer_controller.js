@@ -17,7 +17,28 @@ exports.getTrainerData = async (req, res) => {
                 t.specialization,
                 t.bio,
                 t.rating,
-                t.total_reviews
+                t.total_reviews,
+                -- К-сть тренувань за місяць
+                (SELECT COUNT(*) 
+                    FROM trainings tr
+                    WHERE tr.trainer_id = t.id
+                        AND date_trunc('month', tr.date) = date_trunc('month', CURRENT_DATE)
+                        AND tr.status = 'completed') AS sessions_this_month,
+
+                -- Дохід за місяць
+                (SELECT COALESCE(SUM(tr.price), 0)
+                    FROM trainings tr
+                    JOIN bookings b ON b.training_id = tr.id
+                    WHERE tr.trainer_id = t.id
+                        AND date_trunc('month', tr.date) = date_trunc('month', CURRENT_DATE)
+                        AND b.attendance = 'attended') AS monthly_revenue,
+
+                -- К-сть найближчих тренувань
+                (SELECT COUNT(*)
+                    FROM trainings tr
+                    WHERE tr.trainer_id = t.id
+                        AND tr.date >= CURRENT_DATE
+                        AND tr.status = 'active') AS upcoming_sessions
             FROM users u
             JOIN trainers t ON u.id = t.user_id
             WHERE u.id = $1 AND u.role = 'trainer'
@@ -28,6 +49,9 @@ exports.getTrainerData = async (req, res) => {
             return res.status(404).json({ error: 'Trainer not found' });
         }
         const trainer = rows[0];
+
+
+
         return res.status(200).json({ 
             userId: trainer.user_id, 
             username: trainer.username,
@@ -42,6 +66,9 @@ exports.getTrainerData = async (req, res) => {
             bio: trainer.bio,
             rating: trainer.rating,
             totalReviews: trainer.total_reviews,
+            sessionsThisMonth: trainer.sessions_this_month,
+            monthlyRevenue: trainer.monthly_revenue,
+            upcomingSessions: trainer.upcoming_sessions
         });
     } catch (err) {
         console.error(err);
@@ -103,6 +130,8 @@ exports.getTrainerActiveTrainings = async (req, res) => {
             SELECT 
                 tr.id,
                 tr.name,
+                tr.time,
+                tr.date,
                 tr.duration,
                 tr.price,
                 tr.max_participants,

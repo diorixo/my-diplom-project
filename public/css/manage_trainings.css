@@ -279,6 +279,7 @@
 .modal {
     display: none;
     position: fixed;
+    overflow: auto;
     z-index: 1000;
     left: 0;
     top: 0;
