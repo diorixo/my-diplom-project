@@ -469,9 +469,11 @@ async function saveAttendance() {
         bookingId: participant.booking_id,
         attendance: participant.attendance
     }));
+
+    console.log('Saving attendance data:', attendanceData);
     
     try {
-        const response = await fetch(`/trainer/training/${currentTrainingId}/attendance`, {
+        const response = await fetch(`/trainer/manage_trainings/${currentTrainingId}/attendance`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -198,6 +198,7 @@ exports.getTrainingParticipants = async (req, res) => {
 	try {
 		const query = `
 			SELECT DISTINCT
+                b.id AS booking_id,
     			u.firstname,
     			u.lastname,
                 u.email,
