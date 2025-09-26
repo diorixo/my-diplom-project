@@ -23,6 +23,7 @@ const fetchTrainerData = async () => {
         document.getElementById('phone').textContent = data.phone;
         document.getElementById('createdAt').textContent = data.created_at;
         document.getElementById('specialization').textContent = data.specialization;
+        document.getElementById('totalReviews').textContent = data.totalReviews;
         document.getElementById('rating').textContent = data.rating;
         
         // Статистика
@@ -74,29 +75,6 @@ const loadTrainerTrainings = async () => {
     }
 };
 
-// Відображення тренувань тренера замість розкладу
-// const displayTrainerTrainings = (trainings) => {
-//     const scheduleContainer = document.getElementById('todaySchedule');
-    
-//     if (!trainings || trainings.length === 0) {
-//         scheduleContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Немає активних тренувань</p>';
-//         return;
-//     }
-    
-//     scheduleContainer.innerHTML = '';
-    
-//     trainings.forEach(training => {
-//         const trainingElement = document.createElement('div');
-//         trainingElement.className = 'schedule-item';
-//         trainingElement.innerHTML = `
-//             <span class="time">${training.duration} хв</span>
-//             <span class="client">${training.name}</span>
-//             <span class="type">${training.current_participants}/${training.max_participants}</span>
-//         `;
-//         scheduleContainer.appendChild(trainingElement);
-//     });
-// };
-
 const displayTrainerTrainings = (trainings) => {
     const scheduleContainer = document.getElementById('todaySchedule');
     
@@ -126,6 +104,46 @@ const displayTrainerTrainings = (trainings) => {
 `;
 
         scheduleContainer.appendChild(trainingElement);
+    });
+};
+
+// Завантаження останніх відгуків
+const loadTrainerReviews = async () => {
+    try {
+        const response = await fetch('/trainer/get_reviews');
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data);
+            displayTrainerReviews(data.reviews);
+        }
+    } catch (error) {
+        console.error('Error loading trainer reviews:', error);
+    }
+};
+
+const displayTrainerReviews = (reviews) => {
+    const reviewsContainer = document.getElementById('reviewsList');
+    reviewsContainer.innerHTML = '';
+
+    if (!reviews || reviews.length === 0) {
+        reviewsContainer.innerHTML = '<p style="color: #7f8c8d; text-align:center;">Відгуків ще немає</p>';
+        return;
+    }
+
+    reviews.forEach(r => {
+        const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        const reviewer = `${r.firstname} ${r.lastname.charAt(0)}.`;
+
+        const reviewElement = document.createElement('div');
+        reviewElement.className = 'review-item';
+        reviewElement.innerHTML = `
+            <div class="review-header">
+                <span class="reviewer">${reviewer}</span>
+                <span class="review-rating">${stars}</span>
+            </div>
+            <p class="review-text">"${r.review}"</p>
+        `;
+        reviewsContainer.appendChild(reviewElement);
     });
 };
 
@@ -276,3 +294,4 @@ function formatTime(timeString) {
 
 // Ініціалізація
 fetchTrainerData();
+loadTrainerReviews();

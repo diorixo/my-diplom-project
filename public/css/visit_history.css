@@ -394,13 +394,23 @@
 }
 
 .btn-rate {
-    background: linear-gradient(135deg, #ffc107, #e0a800);
-    color: #212529;
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
 }
 
 .btn-rate:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+}
+
+.btn-edit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
 /* Календарний вигляд */
@@ -469,11 +479,13 @@
 
 .calendar-day {
     background: white;
-    min-height: 100px;
+    min-height: 120px;
     padding: 8px;
     position: relative;
     transition: all 0.3s ease;
     cursor: default;
+    display: flex;
+    flex-direction: column;
 }
 
 .calendar-day:hover {
@@ -493,7 +505,9 @@
 .day-number {
     font-weight: 600;
     color: #495057;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    align-self: flex-start;
 }
 
 .calendar-day.today .day-number {
@@ -503,38 +517,79 @@
 .day-trainings {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 90px;
 }
 
 .day-training {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 500;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid transparent;
+}
+
+.day-training:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.training-short-name {
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 1px;
+}
+
+.training-time {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    line-height: 1;
 }
 
 .day-training.attended {
-    background: #7cff9b;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
     color: #155724;
 }
 
+.day-training.attended:hover {
+    background: linear-gradient(135deg, #c3e6cb, #b8dcc2);
+}
+
 .day-training.not_attended {
-    background: #fde492;
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
     color: #856404;
 }
 
+.day-training.not_attended:hover {
+    background: linear-gradient(135deg, #ffeaa7, #ffe082);
+}
+
 .day-training.pending {
-    background: #91c6ff;
+    background: linear-gradient(135deg, #d0e7ff, #a8d0ff);
     color: #1b4f72;
 }
 
+.day-training.pending:hover {
+    background: linear-gradient(135deg, #a8d0ff, #90c4ff);
+}
+
 .day-training.cancelled {
-    background: #ff99a1;
+    background: linear-gradient(135deg, #f8d7da, #f1c6c8);
     color: #721c24;
+}
+
+.day-training.cancelled:hover {
+    background: linear-gradient(135deg, #f1c6c8, #e8b4b8);
 }
 
 /* Пагінація */

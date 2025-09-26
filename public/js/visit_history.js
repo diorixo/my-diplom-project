@@ -1,5 +1,3 @@
-// JavaScript для сторінки історії відвідувань - visit-history.js
-
 // Глобальні змінні
 let visitHistory = [];
 let filteredHistory = [];
@@ -12,6 +10,7 @@ let selectedTraining = null;
 let selectedRating = 0;
 let trainers = [];
 let categories = [];
+let isEditingRating = false; // Нова змінна для відстеження режиму редагування
 
 // Ініціалізація при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
@@ -41,6 +40,12 @@ async function loadHistoryData() {
             loadCategories()
         ]);
 
+        visitHistory.sort((a, b) => b.date - a.date);
+
+        console.log('Завантажена історія відвідувань:', visitHistory);
+
+        filteredHistory = [...visitHistory];
+
         calculateStatistics();
         populateFilters();
         displayHistory();
@@ -63,7 +68,6 @@ async function loadVisitHistory() {
         }
 
         const data = await response.json();
-        console.log('Отримані дані історії:', data);
         
         // Обробляємо дані та конвертуємо дати
         visitHistory = data.map(item => ({
@@ -114,9 +118,18 @@ async function loadCategories() {
 // Генерація тестових даних
 function generateSampleHistory() {
     const sampleData = [];
-    const statuses = ['completed', 'missed', 'cancelled'];
-    const trainingTypes = ['Тренажерний зал', 'Кардіо', 'Йога', 'Пілатес', 'Кросфіт', 'Бокс'];
+    const statuses = ['attended', 'not_attended', 'cancelled'];
+    const sampleCategories = [
+        { id: 1, category: 'Силові тренування' },
+        { id: 2, category: 'Кардіо' },
+        { id: 3, category: 'Йога та розтяжка' },
+        { id: 4, category: 'Групові заняття' },
+        { id: 5, category: 'Функціональний тренінг' }
+    ];
+    const trainingTypes = ['Тренажерний зал', 'Біг', 'Хатха-йога', 'Зумба', 'Кросфіт', 'Бокс', 'Пілатес'];
     const trainerNames = ['Олександр Петренко', 'Марія Іваненко', 'Андрій Коваль', 'Катерина Мельник'];
+
+    categories.push(...sampleCategories); // Додаємо тестові категорії
 
     for (let i = 0; i < 25; i++) {
         const date = new Date();
@@ -126,6 +139,7 @@ function generateSampleHistory() {
         const trainingType = trainingTypes[Math.floor(Math.random() * trainingTypes.length)];
         const trainer = trainerNames[Math.floor(Math.random() * trainerNames.length)];
         const duration = [45, 60, 75, 90][Math.floor(Math.random() * 4)];
+        const categoryData = sampleCategories[Math.floor(Math.random() * sampleCategories.length)];
 
         sampleData.push({
             id: i + 1,
@@ -136,10 +150,12 @@ function generateSampleHistory() {
             duration: `${duration} хв`,
             status: status,
             price: 150 + Math.floor(Math.random() * 100),
-            rating: status === 'completed' ? (Math.random() > 0.3 ? Math.floor(Math.random() * 5) + 1 : null) : null,
-            review: status === 'completed' && Math.random() > 0.7 ? 'Чудове тренування!' : null,
+            rating: status === 'attended' ? (Math.random() > 0.3 ? Math.floor(Math.random() * 5) + 1 : null) : null,
+            review: status === 'attended' && Math.random() > 0.7 ? 'Чудове тренування!' : null,
             bookingDate: new Date(date.getTime() - 24 * 60 * 60 * 1000), // день до тренування
-            completedAt: status === 'completed' ? date : null
+            completedAt: status === 'attended' ? date : null,
+            categoryId: categoryData.id,
+            categoryName: categoryData.category
         });
     }
 
@@ -161,7 +177,7 @@ function calculateStatistics() {
 
     // Підрахунок загальної статистики
     visitHistory.forEach(visit => {
-        if (visit.status === 'completed') {
+        if (visit.status === 'attended') {
             stats.totalVisits++;
             
             // Витягуємо години з duration
@@ -179,7 +195,7 @@ function calculateStatistics() {
 
     // Підрахунок streak (днів поспіль) - спрощена версія
     const completedDates = visitHistory
-        .filter(v => v.status === 'completed')
+        .filter(v => v.status === 'attended')
         .map(v => v.date.toDateString())
         .filter((date, index, array) => array.indexOf(date) === index)
         .sort((a, b) => new Date(b) - new Date(a));
@@ -215,16 +231,15 @@ function calculateStatistics() {
 
 // Заповнення фільтрів
 function populateFilters() {
-    // Заповнюємо фільтр типів тренувань
-    const typeFilter = document.getElementById('typeHistoryFilter');
-    const uniqueTypes = [...new Set(visitHistory.map(v => v.trainingName))];
+    // Заповнюємо фільтр категорій
+    const categoryFilter = document.getElementById('categoryHistoryFilter');
     
-    typeFilter.innerHTML = '<option value="">Всі види</option>';
-    uniqueTypes.forEach(type => {
+    categoryFilter.innerHTML = '<option value="">Всі категорії</option>';
+    categories.forEach(category => {
         const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        typeFilter.appendChild(option);
+        option.value = category.id;
+        option.textContent = category.category;
+        categoryFilter.appendChild(option);
     });
 
     // Заповнюємо фільтр тренерів
@@ -243,7 +258,7 @@ function populateFilters() {
 // Застосування фільтрів
 function applyHistoryFilters() {
     const periodFilter = document.getElementById('periodFilter').value;
-    const typeFilter = document.getElementById('typeHistoryFilter').value;
+    const categoryFilter = document.getElementById('categoryHistoryFilter').value;
     const trainerFilter = document.getElementById('trainerHistoryFilter').value;
     const statusFilter = document.getElementById('statusFilter').value;
 
@@ -253,8 +268,8 @@ function applyHistoryFilters() {
             return false;
         }
 
-        // Фільтр по типу
-        if (typeFilter && visit.trainingName !== typeFilter) {
+        // Фільтр по категорії
+        if (categoryFilter && visit.categoryId != categoryFilter) {
             return false;
         }
 
@@ -349,6 +364,31 @@ function createHistoryItem(visit) {
     const statusText = getStatusText(visit.status);
     const statusClass = `status-${visit.status}`;
 
+    // Визначаємо, які кнопки показувати
+    let actionButtons = `
+        <button class="action-btn btn-details" onclick="showTrainingDetails(${visit.id})">
+            📝 Деталі
+        </button>
+    `;
+
+    if (visit.status === 'attended') {
+        if (!visit.rating) {
+            // Якщо немає оцінки - показуємо кнопку "Оцінити"
+            actionButtons += `
+                <button class="action-btn btn-rate" onclick="openRatingModal(${visit.id})">
+                    ⭐ Оцінити
+                </button>
+            `;
+        } else {
+            // Якщо є оцінка - показуємо кнопку "Редагувати відгук"
+            actionButtons += `
+                <button class="action-btn btn-edit" onclick="editRating(${visit.id})">
+                    ✏️ Редагувати відгук
+                </button>
+            `;
+        }
+    }
+
     item.innerHTML = `
         <div class="history-header">
             <div class="training-name">${visit.trainingName}</div>
@@ -356,6 +396,10 @@ function createHistoryItem(visit) {
         </div>
         
         <div class="history-info">
+            <div class="info-item">
+                <span>📂</span>
+                <span>Категорія: ${visit.categoryName || 'Не вказана'}</span>
+            </div>
             <div class="info-item">
                 <span>🧑</span>
                 <span>Тренер: ${visit.trainerName}</span>
@@ -378,17 +422,16 @@ function createHistoryItem(visit) {
                 <span>${'★'.repeat(visit.rating)}${'☆'.repeat(5 - visit.rating)} (${visit.rating}/5)</span>
             </div>
             ` : ''}
+            ${visit.review ? `
+            <div class="info-item review-item">
+                <span>💬</span>
+                <span class="review-text">${visit.review}</span>
+            </div>
+            ` : ''}
         </div>
 
         <div class="history-actions">
-            <button class="action-btn btn-details" onclick="showTrainingDetails(${visit.id})">
-                📝 Деталі
-            </button>
-            ${visit.status === 'completed' && !visit.rating ? `
-                <button class="action-btn btn-rate" onclick="openRatingModal(${visit.id})">
-                    ⭐ Оцінити
-                </button>
-            ` : ''}
+            ${actionButtons}
         </div>
     `;
 
@@ -533,22 +576,16 @@ function createCalendarDay(date, isOtherMonth) {
     day.innerHTML = `
         <div class="day-number">${date.getDate()}</div>
         <div class="day-trainings">
-            ${dayTrainings.map(training => 
-                `<div class="day-training ${training.status}" title="${training.trainingName} - ${training.time}">
-                    ${training.trainingName.substring(0, 8)}
+            ${dayTrainings.map((training, index) => 
+                `<div class="day-training ${training.status}" 
+                      onclick="showTrainingDetails(${training.id})"
+                      title="${training.trainingName} - ${training.time} (${training.categoryName || 'Без категорії'})">
+                    <div class="training-short-name">${training.trainingName.substring(0, 10)}${training.trainingName.length > 10 ? '...' : ''}</div>
+                    <div class="training-time">${training.time}</div>
                 </div>`
             ).join('')}
         </div>
     `;
-    
-    // Додаємо обробник кліку
-    if (dayTrainings.length > 0) {
-        day.style.cursor = 'pointer';
-        day.onclick = () => {
-            // Показуємо деталі першого тренування дня
-            showTrainingDetails(dayTrainings[0].id);
-        };
-    }
     
     return day;
 }
@@ -599,6 +636,10 @@ function showTrainingDetails(visitId) {
                 <span class="detail-value">${visit.trainingName}</span>
             </div>
             <div class="detail-row">
+                <span class="detail-label">Категорія:</span>
+                <span class="detail-value">${visit.categoryName || 'Не вказана'}</span>
+            </div>
+            <div class="detail-row">
                 <span class="detail-label">Тренер:</span>
                 <span class="detail-value">${visit.trainerName}</span>
             </div>
@@ -633,6 +674,11 @@ function showTrainingDetails(visitId) {
                 <span class="detail-value">${visit.review}</span>
             </div>
             ` : ''}
+            <div class="detail-actions">
+                <button class="btn btn-secondary" onclick="editRating(${visit.id}); closeDetailModal();">
+                    ✏️ Редагувати оцінку
+                </button>
+            </div>
         </div>
         ` : ''}
         
@@ -661,13 +707,14 @@ function closeDetailModal() {
     selectedTraining = null;
 }
 
-// Відкрити модальне вікно оцінки
+// Відкрити модальне вікно оцінки (нове тренування)
 function openRatingModal(visitId) {
     const visit = visitHistory.find(v => v.id === visitId);
     if (!visit) return;
 
     selectedTraining = visit;
     selectedRating = 0;
+    isEditingRating = false;
     
     // Очищуємо форму
     document.getElementById('ratingTrainingName').textContent = visit.trainingName;
@@ -678,6 +725,33 @@ function openRatingModal(visitId) {
     document.querySelectorAll('.star').forEach(star => {
         star.classList.remove('active');
     });
+
+    // Змінюємо заголовок та кнопку
+    document.querySelector('#ratingModal .modal-header h2').textContent = '⭐ Оцініти тренування';
+    document.querySelector('#ratingForm button[type="submit"]').textContent = 'Залишити оцінку';
+    
+    document.getElementById('ratingModal').style.display = 'block';
+}
+
+// Редагувати існуючу оцінку
+function editRating(visitId) {
+    const visit = visitHistory.find(v => v.id === visitId);
+    if (!visit || !visit.rating) return;
+
+    selectedTraining = visit;
+    selectedRating = visit.rating;
+    isEditingRating = true;
+    
+    // Заповнюємо форму існуючими даними
+    document.getElementById('ratingTrainingName').textContent = visit.trainingName;
+    document.getElementById('reviewText').value = visit.review || '';
+    
+    // Встановлюємо зірки
+    updateStarRating();
+    
+    // Змінюємо заголовок та кнопку для режиму редагування
+    document.querySelector('#ratingModal .modal-header h2').textContent = '✏️ Редагувати відгук';
+    document.querySelector('#ratingForm button[type="submit"]').textContent = 'Зберегти зміни';
     
     document.getElementById('ratingModal').style.display = 'block';
 }
@@ -687,6 +761,7 @@ function closeRatingModal() {
     document.getElementById('ratingModal').style.display = 'none';
     selectedTraining = null;
     selectedRating = 0;
+    isEditingRating = false;
 }
 
 // Налаштування обробників подій
@@ -708,10 +783,15 @@ function setupEventListeners() {
             return;
         }
         
-        const review = document.getElementById('reviewText').value;
+        const review = document.getElementById('reviewText').value.trim();
         
         try {
-            const response = await fetch('/user/rate_training', {
+            // Змінюємо URL залежно від режиму
+            const url = isEditingRating ? 
+                '/user/visit_history/update_rating' : 
+                '/user/visit_history/rate_training';
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -728,11 +808,21 @@ function setupEventListeners() {
                 selectedTraining.rating = selectedRating;
                 selectedTraining.review = review;
                 
+                // Також оновлюємо в основному масиві
+                const visitIndex = visitHistory.findIndex(v => v.id === selectedTraining.id);
+                if (visitIndex !== -1) {
+                    visitHistory[visitIndex].rating = selectedRating;
+                    visitHistory[visitIndex].review = review;
+                }
+                
                 // Оновлюємо відображення
                 displayHistory();
                 closeRatingModal();
                 
-                alert('✅ Оцінка успішно збережена!');
+                const message = isEditingRating ? 
+                    '✅ Відгук успішно оновлено!' : 
+                    '✅ Оцінка успішно збережена!';
+                alert(message);
                 
             } else {
                 throw new Error('Помилка збереження оцінки');
@@ -740,7 +830,10 @@ function setupEventListeners() {
             
         } catch (error) {
             console.error('Помилка збереження оцінки:', error);
-            alert('Помилка при збереженні оцінки. Спробуйте ще раз.');
+            const errorMessage = isEditingRating ? 
+                'Помилка при оновленні відгуку. Спробуйте ще раз.' :
+                'Помилка при збереженні оцінки. Спробуйте ще раз.';
+            alert(errorMessage);
         }
     });
 

@@ -148,6 +148,31 @@ exports.getActiveTrainers = async (req, res) => {
 	}
 };
 
+exports.getAllTrainers = async (req, res) => {
+	try {
+		const query = `
+			SELECT DISTINCT
+    			t.id,
+    			u.firstname,
+    			u.lastname,
+				t.specialization 
+			FROM trainers t
+			JOIN users u ON t.user_id = u.id
+			JOIN trainings tr ON tr.trainer_id = t.id;
+		`;
+		const { rows } = await db.pool.query(query);
+		// if (rows.length === 0) {
+		// 	return res.status(404).json({ error: 'Trainers not found' });
+		// }
+		return res.status(200).json({ 
+			rows
+		});
+	} catch (err) {
+		console.error(err);
+		return res.status(500).json({ error: 'Internal server error' });
+	}
+};
+
 exports.getActiveTrainings = async (req, res) => {
 	try {
 		const query = 'SELECT id, trainer_id, category_id, name, date, time, duration, price, max_participants, current_participants, status FROM trainings WHERE status = \'active\';';

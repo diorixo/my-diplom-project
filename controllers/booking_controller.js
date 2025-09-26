@@ -111,15 +111,21 @@ exports.getUserAllBookings = async (req, res) => {
                 b.created_at AS bookingDate,
                 b.attendance,
                 t.name AS name,
+                t.category_id,
+                c.category,
                 t.date,
                 t.time,
                 t.duration,
                 u.firstname || ' ' || u.lastname AS trainer_name,
-                t.price
+                t.price,
+                r.rating,
+                r.review
             FROM bookings b
             JOIN trainings t ON b.training_id = t.id
             JOIN trainers tr ON t.trainer_id = tr.id
             JOIN users u ON tr.user_id = u.id
+            JOIN categories c ON t.category_id = c.id
+            LEFT JOIN reviews r ON r.booking_id = b.id
             WHERE b.user_id = $1;
         `;
 
@@ -134,11 +140,13 @@ exports.getUserAllBookings = async (req, res) => {
             duration: `${row.duration} хв`,
             status: row.attendance,
             price: row.price,
-            rating: '',
-            review: '',
+            rating: row.rating || null,
+            review: row.review || null,
             bookingDate: row.bookingdate,
             completedAt: row.attandence === 'attended' ? row.date : null,
-            notes: row.notes
+            notes: row.notes,
+            categoryId: row.category_id,
+            categoryName: row.category
         }));
 
         return res.status(200).json(result);
@@ -192,3 +200,31 @@ exports.updateBookingAttendance = async (req, res) => {
         res.status(500).json({ error: 'Помилка при збереженні відвідуваності' });
     }
 };
+
+exports.rateTraining = async (req, res) => {
+    try {
+        const { visitId, rating, review } = req.body;
+        const query = 'INSERT INTO reviews (booking_id, rating, review) VALUES ($1, $2, $3) RETURNING id;';
+        const values = [visitId, rating, review];
+        const { rows } = await db.pool.query(query, values);
+ 
+        res.status(201).json({ success: true, message: 'Відгук створено' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Помилка при створенні відгука' });
+    }
+}
+
+exports.updateRateTraining = async (req, res) => {
+    try {
+        const { visitId, rating, review } = req.body;
+        const query = 'UPDATE reviews SET rating = $1, review = $2 WHERE booking_id = $3';
+        const values = [ rating, review, visitId] ;
+        await db.pool.query(query, values);
+ 
+        res.status(201).json({ success: true, message: 'Відгук оновлено' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: 'Помилка при оновлені відгука' });
+    }
+}

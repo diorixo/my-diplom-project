@@ -205,3 +205,44 @@ exports.getTrainerTrainings = async (req, res) => {
         res.status(500).json({ error: 'Помилка сервера' });
     }
 }
+
+// Наприклад у trainer_controller.js
+exports.getTrainerReviews = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+        
+    // Отримуємо ID тренера
+    const query = `SELECT id FROM trainers WHERE user_id = $1`;
+    const values = [userId];
+
+    const { rows } = await db.pool.query(query, values);
+        
+    if (rows.length === 0) {
+        return res.status(404).json({ error: 'Тренер не знайдений' });
+    }
+        
+    const trainerId = rows[0].id;
+
+    const queryInfo = `
+        SELECT
+            r.id,
+            r.rating,
+            r.review,
+            r.created_at,
+            u.firstname, 
+            u.lastname
+        FROM reviews r
+        JOIN bookings b ON r.booking_id = b.id
+        JOIN users u ON b.user_id = u.id
+        JOIN trainings t ON b.training_id = t.id
+        WHERE t.trainer_id = $1
+        ORDER BY r.created_at DESC
+        LIMIT 10;
+    `;
+    const reviews = await db.pool.query(queryInfo, [trainerId]);
+    res.json({ reviews: reviews.rows });
+  } catch (err) {
+    console.error('Error fetching reviews:', err);
+    res.status(500).json({ error: 'Помилка отримання відгуків' });
+  }
+};

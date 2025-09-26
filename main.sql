@@ -57,6 +57,36 @@ BEFORE UPDATE ON trainers
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
+CREATE OR REPLACE FUNCTION update_trainer_rating()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE trainers t
+    SET 
+        rating = COALESCE((
+            SELECT ROUND(AVG(r.rating)::numeric, 2)
+            FROM reviews r
+            JOIN bookings b ON r.booking_id = b.id
+            JOIN trainings tr ON b.training_id = tr.id
+            WHERE tr.trainer_id = t.id
+        ), 0),
+        total_reviews = (
+            SELECT COUNT(r.id)
+            FROM reviews r
+            JOIN bookings b ON r.booking_id = b.id
+            JOIN trainings tr ON b.training_id = tr.id
+            WHERE tr.trainer_id = t.id
+        )
+    WHERE t.id IN (
+        SELECT tr.trainer_id
+        FROM bookings b
+        JOIN trainings tr ON b.training_id = tr.id
+        WHERE b.id = NEW.booking_id
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 select * from trainers order by id;
 
 INSERT INTO trainers (user_id) VALUES (2);
@@ -134,20 +164,18 @@ BEGIN
         WHERE id = OLD.training_id;
         RETURN OLD;
     END IF;
-END;
-$$ LANGUAGE plpgsql;
 
--- Функція для зменшення current_participants при cancel
-CREATE OR REPLACE FUNCTION decrease_participants_on_cancel()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Перевіряємо, чи attendance змінилось на 'cancelled'
-    IF NEW.attendance = 'cancelled' AND OLD.attendance <> 'cancelled' THEN
-        UPDATE trainings
-        SET current_participants = current_participants - 1
-        WHERE id = NEW.training_id;
+    -- Коли оновлюється attendance
+    IF TG_OP = 'UPDATE' THEN
+        -- Якщо новий статус = cancelled, а старий не був cancelled → віднімаємо 1
+        IF NEW.attendance = 'cancelled' AND OLD.attendance <> 'cancelled' THEN
+            UPDATE trainings
+            SET current_participants = current_participants - 1
+            WHERE id = NEW.training_id;
+
+        END IF;
     END IF;
-    RETURN NEW;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -185,25 +213,49 @@ CREATE TABLE bookings (
 	FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE
 );
 
--- Тригери для таблиці bookings
+-- Тригер для таблиці bookings
 DROP TRIGGER IF EXISTS bookings_update_trainings ON bookings;
 CREATE TRIGGER bookings_update_trainings
-AFTER INSERT OR DELETE ON bookings
+AFTER INSERT OR DELETE OR UPDATE ON bookings
 FOR EACH ROW
 EXECUTE FUNCTION update_training_participants();
 
-DROP TRIGGER IF EXISTS bookings_attendance_cancel ON bookings;
-CREATE TRIGGER bookings_attendance_cancel
-AFTER UPDATE OF attendance ON bookings
-FOR EACH ROW
-EXECUTE FUNCTION decrease_participants_on_cancel();
-
+-- Тригер для таблиці bookings
 CREATE TRIGGER set_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 select * from bookings order by id;
+------------------------------------------------------
+
+-- Таблиця відгуків --
+DROP TABLE IF EXISTS reviews CASCADE;
+CREATE TABLE reviews (
+    id SERIAL PRIMARY KEY,
+    booking_id INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
+    review VARCHAR(255),
+	created_at TIMESTAMP DEFAULT now() NOT NULL,
+	updated_at TIMESTAMP DEFAULT now() NOT NULL,
+
+    
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+-- Тригер для таблиці reviews
+CREATE TRIGGER set_reviews_updated_at
+BEFORE UPDATE ON reviews
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS reviews_update_trainer ON reviews;
+CREATE TRIGGER reviews_update_trainer
+AFTER INSERT OR UPDATE OR DELETE ON reviews
+FOR EACH ROW
+EXECUTE FUNCTION update_trainer_rating();
+
+select * from reviews order by id;
 ------------------------------------------------------
 
 -- Інше --
@@ -235,26 +287,3 @@ SELECT DISTINCT
 			WHERE tr.status = 'active';
 
 SELECT id FROM trainers WHERE user_id = 2;
-
-SELECT COUNT(*) AS visit_count
-            FROM bookings
-            WHERE user_id = 1
-            AND attendance = 'attended'
-            AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)
-
-
-SELECT 
-                b.id AS id,
-                b.notes,
-                b.created_at AS bookingDate,
-                b.attendance,
-                t.name AS name,
-                t.date,
-                t.time,
-                t.duration,
-                u.firstname || ' ' || u.lastname AS trainer_name
-            FROM bookings b
-            JOIN trainings t ON b.training_id = t.id
-            JOIN trainers tr ON t.trainer_id = tr.id
-            JOIN users u ON tr.user_id = u.id
-            WHERE b.user_id = 1;
