@@ -1,0 +1,52 @@
+<!-- views/blocks/chat-widget.ejs - EJS блок для AI чату -->
+
+<!-- AI Chat Widget HTML -->
+<div id="ai-chat-widget">
+    <!-- Chat Button -->
+    <div id="chat-button" class="chat-button">
+        <img src="/images/ai_assistant/button.svg" alt="Chat with AI">
+        <span>AI Помічник</span>
+    </div>
+
+    <!-- Chat Window -->
+    <div id="chat-window" class="chat-window hidden">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="avatar">
+                    <img src="/images/ai_assistant/avatar.svg">
+                </div>
+                <div class="chat-info">
+                    <h3>AI Помічник</h3>
+                    <span class="status online">В мережі</span>
+                </div>
+            </div>
+            <button id="close-chat" class="close-button">
+                <img src="/images/ai_assistant/close.svg">
+            </button>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>Привіт! Я AI-помічник спортивного центру реабілітації. Можу допомогти з інформацією про тренування, тренерів, запис на заняття та відповісти на ваші запитання. Як можу допомогти?</p>
+                </div>
+                <div class="message-time">Зараз</div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" id="chat-input" placeholder="Напишіть ваше повідомлення..." autocomplete="off">
+                <button id="send-message" class="send-button">
+                    <img src="/images/ai_assistant/send.svg">
+                </button>
+            </div>
+            <div class="typing-indicator hidden" id="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+                AI помічник друкує...
+            </div>
+        </div>
+    </div>
+</div>
