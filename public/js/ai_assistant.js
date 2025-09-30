@@ -1,19 +1,23 @@
-class ChatWidget {
+class EnhancedChatWidget {
     constructor() {
         this.isOpen = false;
         this.isTyping = false;
         this.conversationHistory = [];
         this.conversationId = this.generateConversationId();
+        this.quickReplies = [];
+        this.messageCount = 0;
         this.init();
+    }
+
+    generateConversationId() {
+        return 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     init() {
         this.setupEventListeners();
         this.loadChatHistory();
-    }
-
-    generateConversationId() {
-        return 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        this.loadQuickReplies();
+        this.addClearChatButton();
     }
 
     setupEventListeners() {
@@ -22,11 +26,11 @@ class ChatWidget {
         const sendButton = document.getElementById('send-message');
         const chatInput = document.getElementById('chat-input');
 
-        chatButton.addEventListener('click', () => this.toggleChat());
-        closeButton.addEventListener('click', () => this.closeChat());
-        sendButton.addEventListener('click', () => this.sendMessage());
+        chatButton?.addEventListener('click', () => this.toggleChat());
+        closeButton?.addEventListener('click', () => this.closeChat());
+        sendButton?.addEventListener('click', () => this.sendMessage());
         
-        chatInput.addEventListener('keypress', (e) => {
+        chatInput?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
@@ -34,7 +38,7 @@ class ChatWidget {
         });
 
         // Auto-resize input
-        chatInput.addEventListener('input', () => {
+        chatInput?.addEventListener('input', () => {
             this.adjustInputHeight();
         });
 
@@ -44,22 +48,35 @@ class ChatWidget {
         });
     }
 
+    async loadQuickReplies() {
+        try {
+            const response = await fetch('/api/chat/quick-replies');
+            if (response.ok) {
+                const data = await response.json();
+                this.quickReplies = data.quickReplies || [];
+            }
+        } catch (error) {
+            console.warn('Failed to load quick replies:', error);
+        }
+    }
+
     toggleChat() {
         const chatWindow = document.getElementById('chat-window');
         
         if (this.isOpen) {
             this.closeChat();
         } else {
-            chatWindow.classList.remove('hidden');
+            chatWindow?.classList.remove('hidden');
             this.isOpen = true;
             this.focusInput();
+            this.showQuickRepliesIfNeeded();
             this.trackEvent('chat_opened');
         }
     }
 
     closeChat() {
         const chatWindow = document.getElementById('chat-window');
-        chatWindow.classList.add('hidden');
+        chatWindow?.classList.add('hidden');
         this.isOpen = false;
         this.trackEvent('chat_closed');
     }
@@ -67,59 +84,150 @@ class ChatWidget {
     focusInput() {
         setTimeout(() => {
             const input = document.getElementById('chat-input');
-            if (input) {
-                input.focus();
-            }
+            input?.focus();
         }, 300);
     }
 
     adjustInputHeight() {
         const input = document.getElementById('chat-input');
-        input.style.height = 'auto';
-        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+        if (input) {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+        }
     }
 
     handleResize() {
         if (this.isOpen && window.innerWidth <= 480) {
-            // Adjust for mobile
             const chatWindow = document.getElementById('chat-window');
-            chatWindow.style.height = window.innerHeight + 'px';
+            if (chatWindow) {
+                chatWindow.style.height = window.innerHeight + 'px';
+            }
         }
+    }
+
+    showQuickRepliesIfNeeded() {
+        // Показуємо швидкі відповіді тільки якщо мало повідомлень
+        if (this.messageCount <= 2) {
+            setTimeout(() => {
+                this.showQuickReplies();
+            }, 1000);
+        }
+    }
+
+    showQuickReplies() {
+        const messagesContainer = document.getElementById('chat-messages');
+        if (!messagesContainer || messagesContainer.querySelector('.quick-replies')) return;
+
+        if (this.quickReplies.length === 0) return;
+
+        const quickRepliesDiv = document.createElement('div');
+        quickRepliesDiv.classList.add('quick-replies');
+        quickRepliesDiv.innerHTML = `
+            <div class="quick-replies-title">💭 Популярні питання:</div>
+            <div class="quick-replies-buttons">
+                ${this.quickReplies.map(reply => 
+                    `<button class="quick-reply-btn" data-question="${reply.question}" data-id="${reply.id}">
+                        ${reply.text}
+                    </button>`
+                ).join('')}
+            </div>
+        `;
+
+        messagesContainer.appendChild(quickRepliesDiv);
+        this.scrollToBottom(messagesContainer);
+
+        // Додаємо обробники подій
+        quickRepliesDiv.querySelectorAll('.quick-reply-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const question = e.target.getAttribute('data-question');
+                const id = e.target.getAttribute('data-id');
+                this.handleQuickReply(question, id);
+            });
+        });
+    }
+
+    hideQuickReplies() {
+        const quickReplies = document.querySelector('.quick-replies');
+        if (quickReplies) {
+            quickReplies.style.opacity = '0';
+            quickReplies.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                quickReplies.remove();
+            }, 300);
+        }
+    }
+
+    handleQuickReply(question, id) {
+        this.addMessage('user', question);
+        this.hideQuickReplies();
+        this.sendQuestionToAI(question, id);
+        this.trackEvent('quick_reply_used', { reply_id: id, question: question });
     }
 
     async sendMessage() {
         const input = document.getElementById('chat-input');
-        const message = input.value.trim();
+        const message = input?.value.trim();
         
         if (!message || this.isTyping) return;
 
-        // Add user message to chat
         this.addMessage('user', message);
         input.value = '';
         this.adjustInputHeight();
+        this.hideQuickReplies();
 
-        // Show typing indicator
         this.showTyping();
         this.trackEvent('message_sent', { message_length: message.length });
 
         try {
-            // Send message to AI
             const response = await this.sendToAI(message);
             this.hideTyping();
-            this.addMessage('bot', response);
-            this.trackEvent('message_received');
+            this.addMessage('bot', response.message, response.source);
+            this.trackEvent('message_received', { source: response.source });
+            
+            // Показуємо швидкі відповіді знову якщо мало повідомлень
+            if (this.messageCount < 4) {
+                setTimeout(() => {
+                    this.showQuickReplies();
+                }, 3000);
+            }
         } catch (error) {
             this.hideTyping();
-            this.addMessage('bot', 'Вибачте, сталася помилка. Спробуйте пізніше.');
+            this.addMessage('bot', 'Вибачте, сталася помилка 😔 Спробуйте пізніше або зверніться до адміністрації.');
             console.error('Chat error:', error);
             this.trackEvent('message_error', { error: error.message });
         }
     }
 
-    addMessage(sender, text) {
+    async sendQuestionToAI(question, replyId = null) {
+        this.showTyping();
+
+        try {
+            const response = await this.sendToAI(question);
+            this.hideTyping();
+            this.addMessage('bot', response.message, response.source);
+            
+            setTimeout(() => {
+                this.showQuickReplies();
+            }, 5000);
+            
+        } catch (error) {
+            this.hideTyping();
+            this.addMessage('bot', 'Вибачте, сталася помилка. Спробуйте пізніше.');
+            console.error('Quick reply error:', error);
+        }
+    }
+
+    addMessage(sender, text, source = 'user') {
         const messagesContainer = document.getElementById('chat-messages');
+        if (!messagesContainer) return;
+
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+        
+        // Додаємо атрибут джерела для бот повідомлень
+        if (sender === 'bot' && source) {
+            messageDiv.setAttribute('data-source', source);
+        }
 
         const messageContent = document.createElement('div');
         messageContent.classList.add('message-content');
@@ -133,29 +241,111 @@ class ChatWidget {
         messageDiv.appendChild(messageTime);
         messagesContainer.appendChild(messageDiv);
 
-        // Scroll to bottom with smooth animation
+        // Додаємо індикатор джерела для бот повідомлень
+        if (sender === 'bot' && source) {
+            this.addSourceIndicator(messageDiv, source);
+        }
+
+        // Додаємо кнопки фідбеку для бот повідомлень (окрім привітання)
+        if (sender === 'bot' && !text.includes('Привіт! 👋')) {
+            setTimeout(() => {
+                this.addFeedbackButtons(messageDiv, source);
+            }, 2000);
+        }
+
         this.scrollToBottom(messagesContainer);
 
-        // Save to conversation history
+        // Зберігаємо в історії розмов
         this.conversationHistory.push({
             role: sender === 'user' ? 'user' : 'assistant',
             content: text,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            source: source
         });
 
-        // Save to localStorage
+        this.messageCount++;
         this.saveChatHistory();
     }
 
+    addSourceIndicator(messageElement, source) {
+        const indicator = document.createElement('div');
+        indicator.classList.add('source-indicator');
+        
+        const sourceText = source === 'faq' ? '📚 Швидка відповідь' : '🤖 AI відповідь';
+        const sourceColor = source === 'faq' ? '#10b981' : '#6366f1';
+        
+        indicator.innerHTML = `
+            <span style="color: ${sourceColor}; font-size: 11px;">${sourceText}</span>
+        `;
+        
+        messageElement.appendChild(indicator);
+    }
+
+    addFeedbackButtons(messageElement, source) {
+        if (messageElement.querySelector('.message-feedback')) return;
+
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.classList.add('message-feedback');
+        feedbackDiv.innerHTML = `
+            <div class="feedback-question">Чи була відповідь корисною?</div>
+            <div class="feedback-buttons">
+                <button class="feedback-btn positive" data-rating="positive" title="Так, корисно">
+                    👍
+                </button>
+                <button class="feedback-btn negative" data-rating="negative" title="Ні, не корисно">
+                    👎
+                </button>
+            </div>
+        `;
+
+        messageElement.appendChild(feedbackDiv);
+
+        feedbackDiv.querySelectorAll('.feedback-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const rating = e.target.getAttribute('data-rating');
+                this.handleFeedback(rating, messageElement, feedbackDiv, source);
+            });
+        });
+    }
+
+    handleFeedback(rating, messageElement, feedbackDiv, source) {
+        const isPositive = rating === 'positive';
+        
+        feedbackDiv.innerHTML = `
+            <div class="feedback-thanks">
+                ${isPositive ? 
+                    '✅ Дякуємо за відгук!' : 
+                    '📝 Дякуємо! Ми покращимо відповіді.'
+                }
+            </div>
+        `;
+
+        // Відправляємо фідбек на сервер
+        this.submitFeedback(isPositive ? 5 : 2, '', this.conversationId, source);
+
+        this.trackEvent('message_feedback', { 
+            rating: rating,
+            source: source,
+            conversation_id: this.conversationId
+        });
+
+        // Автоматично прибираємо фідбек через 3 секунди
+        setTimeout(() => {
+            feedbackDiv.style.opacity = '0';
+            setTimeout(() => {
+                feedbackDiv.remove();
+            }, 300);
+        }, 3000);
+    }
+
     formatMessage(text) {
-        // Enhanced formatting for better readability
         return text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/`(.*?)`/g, '<code style="background: #f1f5f9; padding: 2px 4px; border-radius: 3px; font-size: 0.9em;">$1</code>')
             .replace(/\n/g, '<br>')
-            .replace(/(\d+\.\s)/g, '<br>$1') // Format numbered lists
-            .replace(/^-\s(.+)/gm, '<br>• $1'); // Format bullet points
+            .replace(/^• (.+)/gm, '<div style="margin-left: 12px;">• $1</div>')
+            .replace(/^(\d+\.\s)(.+)/gm, '<div style="margin-left: 12px;">$1$2</div>');
     }
 
     getCurrentTime() {
@@ -167,11 +357,12 @@ class ChatWidget {
     }
 
     scrollToBottom(container) {
-        const scrollOptions = {
-            top: container.scrollHeight,
-            behavior: 'smooth'
-        };
-        container.scrollTo(scrollOptions);
+        setTimeout(() => {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
+        }, 100);
     }
 
     showTyping() {
@@ -179,12 +370,8 @@ class ChatWidget {
         const typingIndicator = document.getElementById('typing-indicator');
         const sendButton = document.getElementById('send-message');
         
-        if (typingIndicator) {
-            typingIndicator.classList.remove('hidden');
-        }
-        if (sendButton) {
-            sendButton.disabled = true;
-        }
+        typingIndicator?.classList.remove('hidden');
+        if (sendButton) sendButton.disabled = true;
     }
 
     hideTyping() {
@@ -192,43 +379,17 @@ class ChatWidget {
         const typingIndicator = document.getElementById('typing-indicator');
         const sendButton = document.getElementById('send-message');
         
-        if (typingIndicator) {
-            typingIndicator.classList.add('hidden');
-        }
-        if (sendButton) {
-            sendButton.disabled = false;
-        }
+        typingIndicator?.classList.add('hidden');
+        if (sendButton) sendButton.disabled = false;
     }
 
     async sendToAI(message) {
-        // Підготовка системного промпту з інформацією про спортивний центр
-        const systemPrompt = `Ти AI-помічник спортивного центру реабілітації. 
-        
-        Твоя мета - допомагати клієнтам з:
-        - Інформацією про тренування та заняття
-        - Записом на тренування
-        - Інформацією про тренерів
-        - Відповідями на питання про послуги центру
-        - Порадами з реабілітації та фітнесу
-        
-        Доступні категорії тренувань:
-        - Тренажерний зал
-        - Кардіо
-        - Йога
-        - Пілатес
-        - Кросфіт
-        - Бокс
-        - Плавання
-        
-        Відповідай українською мовою, будь дружнім та професійним. Якщо не знаєш відповіді на конкретне питання, запропонуй клієнту зв'язатися з адміністрацією.`;
-
-        // Підготовка повідомлень для API
         const messages = [
             {
                 role: 'system',
-                content: systemPrompt
+                content: 'Ти AI-помічник спортивного центру реабілітації.'
             },
-            ...this.conversationHistory.slice(-10), // Останні 10 повідомлень для контексту
+            ...this.conversationHistory.slice(-10),
             {
                 role: 'user',
                 content: message
@@ -252,7 +413,36 @@ class ChatWidget {
         }
 
         const data = await response.json();
-        return data.message;
+        return {
+            message: data.message,
+            source: data.source || 'ai',
+            usage: data.usage
+        };
+    }
+
+    async submitFeedback(rating, comment = '', conversation_id, source = 'ai') {
+        try {
+            const response = await fetch('/api/chat/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    rating,
+                    comment,
+                    conversation_id,
+                    message_source: source
+                })
+            });
+
+            if (response.ok) {
+                this.trackEvent('feedback_submitted', { rating, has_comment: !!comment, source });
+                return true;
+            }
+        } catch (error) {
+            console.error('Feedback submission error:', error);
+        }
+        return false;
     }
 
     saveChatHistory() {
@@ -260,6 +450,7 @@ class ChatWidget {
             const chatData = {
                 conversationId: this.conversationId,
                 history: this.conversationHistory,
+                messageCount: this.messageCount,
                 lastUpdate: new Date().toISOString()
             };
             localStorage.setItem('chatHistory', JSON.stringify(chatData));
@@ -274,7 +465,6 @@ class ChatWidget {
             if (saved) {
                 const chatData = JSON.parse(saved);
                 
-                // Check if saved data is from today
                 const lastUpdate = new Date(chatData.lastUpdate);
                 const today = new Date();
                 const isToday = lastUpdate.toDateString() === today.toDateString();
@@ -282,6 +472,7 @@ class ChatWidget {
                 if (isToday && chatData.history) {
                     this.conversationHistory = chatData.history;
                     this.conversationId = chatData.conversationId || this.conversationId;
+                    this.messageCount = chatData.messageCount || 0;
                     this.restoreMessages();
                 }
             }
@@ -295,22 +486,20 @@ class ChatWidget {
         const messagesContainer = document.getElementById('chat-messages');
         if (!messagesContainer) return;
 
-        // Clear existing messages except welcome message
         const welcomeMessage = messagesContainer.querySelector('.message');
         messagesContainer.innerHTML = '';
         if (welcomeMessage) {
             messagesContainer.appendChild(welcomeMessage);
         }
 
-        // Restore conversation history
         this.conversationHistory.forEach(msg => {
             if (msg.role !== 'system') {
-                this.addMessageToDOM(msg.role === 'user' ? 'user' : 'bot', msg.content);
+                this.addMessageToDOM(msg.role === 'user' ? 'user' : 'bot', msg.content, msg.source);
             }
         });
     }
 
-    addMessageToDOM(sender, text) {
+    addMessageToDOM(sender, text, source) {
         const messagesContainer = document.getElementById('chat-messages');
         if (!messagesContainer) return;
 
@@ -329,54 +518,25 @@ class ChatWidget {
         messageDiv.appendChild(messageTime);
         messagesContainer.appendChild(messageDiv);
 
+        if (sender === 'bot' && source) {
+            this.addSourceIndicator(messageDiv, source);
+        }
+
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    // Event tracking for analytics
     trackEvent(eventName, data = {}) {
         try {
-            // You can integrate with Google Analytics, Mixpanel, etc.
-            console.log('Chat Event:', eventName, data);
-            
-            // Example: Send to your analytics service
-            // gtag('event', eventName, {
-            //     event_category: 'chat',
-            //     ...data
-            // });
+            console.log('📊 Chat Event:', eventName, data);
         } catch (error) {
             console.warn('Analytics tracking error:', error);
         }
     }
 
-    // Feedback system
-    async submitFeedback(rating, comment = '') {
-        try {
-            const response = await fetch('/api/chat/feedback', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    rating,
-                    comment,
-                    conversation_id: this.conversationId
-                })
-            });
-
-            if (response.ok) {
-                this.trackEvent('feedback_submitted', { rating, has_comment: !!comment });
-                return true;
-            }
-        } catch (error) {
-            console.error('Feedback submission error:', error);
-        }
-        return false;
-    }
-
-    // Метод для очищення історії чату
     clearHistory() {
         this.conversationHistory = [];
         this.conversationId = this.generateConversationId();
+        this.messageCount = 0;
         localStorage.removeItem('chatHistory');
         
         const messagesContainer = document.getElementById('chat-messages');
@@ -388,10 +548,36 @@ class ChatWidget {
             }
         }
         
+        setTimeout(() => {
+            this.showQuickReplies();
+        }, 500);
+        
         this.trackEvent('history_cleared');
     }
 
-    // Метод для показу статусу підключення
+    addClearChatButton() {
+        const chatHeader = document.querySelector('.chat-header');
+        if (!chatHeader || chatHeader.querySelector('.clear-chat-btn')) return;
+
+        const clearBtn = document.createElement('button');
+        clearBtn.classList.add('clear-chat-btn');
+        clearBtn.innerHTML = `
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        `;
+        clearBtn.title = 'Очистити чат';
+        
+        const closeBtn = chatHeader.querySelector('.close-button');
+        chatHeader.insertBefore(clearBtn, closeBtn);
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Очистити історію чату?')) {
+                this.clearHistory();
+            }
+        });
+    }
+
     updateConnectionStatus(isOnline) {
         const statusElement = document.querySelector('.status');
         if (statusElement) {
@@ -401,14 +587,9 @@ class ChatWidget {
     }
 }
 
-// Перевірка підключення до інтернету
-function checkConnection() {
-    return navigator.onLine;
-}
-
-// Ініціалізація чат-віджета при завантаженні сторінки
+// Ініціалізація покращеного віджета
 document.addEventListener('DOMContentLoaded', () => {
-    const chatWidget = new ChatWidget();
+    const chatWidget = new EnhancedChatWidget();
     
     // Monitor connection status
     window.addEventListener('online', () => {
@@ -419,14 +600,10 @@ document.addEventListener('DOMContentLoaded', () => {
         chatWidget.updateConnectionStatus(false);
     });
     
-    // Set initial connection status
-    chatWidget.updateConnectionStatus(checkConnection());
-    
-    // Make chat widget globally accessible
+    chatWidget.updateConnectionStatus(navigator.onLine);
     window.chatWidget = chatWidget;
 });
 
-// Експорт для можливого використання в інших частинах додатку
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ChatWidget;
+    module.exports = EnhancedChatWidget;
 }

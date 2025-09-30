@@ -20,6 +20,7 @@ app.use(require('./routes/category_route'))
 app.use(require('./routes/trainer_route'))
 app.use(require('./routes/booking_route'))
 app.use(require('./routes/chat_route'))
+app.use(require('./routes/analytics_route'));
 
 app.get('/', (req, res) => {
     res.render('index')

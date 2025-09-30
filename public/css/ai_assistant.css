@@ -382,3 +382,448 @@
         transform: translateY(0);
     }
 }
+
+/* Додай цей CSS в кінець файлу public/css/chat-widget.css */
+
+/* === ШВИДКІ ВІДПОВІДІ === */
+.quick-replies {
+    margin: 16px 0;
+    padding: 0 4px;
+    animation: fadeInUp 0.5s ease;
+}
+
+.quick-replies-title {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.quick-replies-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.quick-reply-btn {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-width: 120px;
+    max-width: 160px;
+}
+
+.quick-reply-btn:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.quick-reply-btn:active {
+    transform: translateY(0);
+}
+
+/* === ІНДИКАТОРИ ДЖЕРЕЛА === */
+.source-indicator {
+    margin-top: 6px;
+    text-align: left;
+}
+
+.bot-message .source-indicator {
+    align-self: flex-start;
+}
+
+/* === СИСТЕМА ФІДБЕКУ === */
+.message-feedback {
+    margin-top: 8px;
+    padding: 8px 0;
+    border-top: 1px solid #f1f5f9;
+    animation: fadeIn 0.3s ease;
+}
+
+.feedback-question {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.feedback-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.feedback-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback-btn:hover {
+    transform: scale(1.1);
+}
+
+.feedback-btn.positive:hover {
+    background: #dcfce7;
+    border-color: #16a34a;
+}
+
+.feedback-btn.negative:hover {
+    background: #fef2f2;
+    border-color: #dc2626;
+}
+
+.feedback-thanks {
+    font-size: 11px;
+    color: #059669;
+    text-align: center;
+    font-weight: 500;
+    animation: slideIn 0.3s ease;
+}
+
+/* === КНОПКА ОЧИЩЕННЯ ЧАТУ === */
+.clear-chat-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    margin-right: 8px;
+}
+
+.clear-chat-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.clear-chat-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* === ПОКРАЩЕНІ ПОВІДОМЛЕННЯ === */
+.message-content {
+    line-height: 1.5;
+}
+
+.message-content strong {
+    font-weight: 600;
+    color: inherit;
+}
+
+.message-content em {
+    font-style: italic;
+    opacity: 0.9;
+}
+
+.message-content code {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+}
+
+.bot-message .message-content div {
+    margin: 4px 0;
+}
+
+/* === АНІМАЦІЇ === */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === ПОКРАЩЕНИЙ RESPONSIVE === */
+@media (max-width: 768px) {
+    .quick-replies-buttons {
+        justify-content: stretch;
+    }
+    
+    .quick-reply-btn {
+        flex: 1;
+        min-width: auto;
+        max-width: none;
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+    
+    .feedback-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-replies {
+        margin: 12px 0;
+    }
+    
+    .quick-reply-btn {
+        font-size: 10px;
+        padding: 5px 6px;
+    }
+    
+    .message-feedback {
+        padding: 6px 0;
+    }
+    
+    .feedback-buttons {
+        gap: 6px;
+    }
+}
+
+/* === СТАТУСИ ПІДКЛЮЧЕННЯ === */
+.status.offline {
+    color: #f87171 !important;
+}
+
+.status.offline::before {
+    content: '●';
+    color: #f87171;
+    margin-right: 4px;
+}
+
+/* === ПОКРАЩЕННЯ СКРОЛБАРУ === */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* === ДОДАТКОВІ ПОКРАЩЕННЯ === */
+.chat-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.chat-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.chat-input-container {
+    position: relative;
+    background: white;
+}
+
+.chat-input-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+/* === HOVER ЕФЕКТИ === */
+.message:hover {
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
+}
+
+.user-message:hover {
+    transform: translateX(-2px);
+}
+
+/* === ФОКУС СТИЛІ === */
+#chat-input:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.send-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* === ТЕМНА ТЕМА (ОПЦІОНАЛЬНО) === */
+@media (prefers-color-scheme: dark) {
+    .chat-window {
+        background: #1e293b;
+        color: #f1f5f9;
+    }
+    
+    .chat-messages {
+        background: #0f172a;
+    }
+    
+    .bot-message .message-content {
+        background: #334155;
+        border-color: #475569;
+        color: #f1f5f9;
+    }
+    
+    .quick-reply-btn {
+        background: #374151;
+        color: #d1d5db;
+        border-color: #4b5563;
+    }
+    
+    .quick-reply-btn:hover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .feedback-btn {
+        background: #374151;
+        border-color: #4b5563;
+        color: #d1d5db;
+    }
+    
+    #chat-input {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f1f5f9;
+    }
+    
+    .chat-input-container {
+        background: #1e293b;
+        border-color: #334155;
+    }
+}
+
+/* === АНІМАЦІЇ ЗАВАНТАЖЕННЯ === */
+.loading-dots {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.loading-dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #94a3b8;
+    animation: loadingDots 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loadingDots {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* === ПОКРАЩЕННЯ ДОСТУПНОСТІ === */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* === HIGH CONTRAST MODE === */
+@media (prefers-contrast: high) {
+    .chat-window {
+        border: 2px solid #000;
+    }
+    
+    .bot-message .message-content {
+        border: 1px solid #000;
+    }
+    
+    .quick-reply-btn {
+        border: 2px solid #000;
+    }
+    
+    .feedback-btn {
+        border: 2px solid #000;
+    }
+}
+
+/* === PRINT СТИЛІ === */
+@media print {
+    #ai-chat-widget {
+        display: none;
+    }
+}
+
+/* === ПОКРАЩЕННЯ ДЛЯ СЕНСОРНИХ ПРИСТРОЇВ === */
+@media (hover: none) and (pointer: coarse) {
+    .quick-reply-btn {
+        min-height: 44px;
+        padding: 10px 12px;
+    }
+    
+    .feedback-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    .clear-chat-btn,
+    .close-button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

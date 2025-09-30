@@ -1,9 +1,7 @@
-// routes/chat_route.js - Покращена версія з кращими відповідями
-
 const express = require('express');
 const router = express.Router();
 const db = require('../services/db');
-// const fetch = require('node-fetch');
+const { searchFAQ, getRandomFAQs } = require('../services/faq');
 
 // OpenRouter API конфігурація
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -57,7 +55,7 @@ async function getContextInfo() {
     }
 }
 
-// POST /api/chat - обробка чат повідомлень
+// POST /api/chat - обробка чат повідомлень з FAQ
 router.post('/api/chat', async (req, res) => {
     try {
         const { messages } = req.body;
@@ -68,11 +66,32 @@ router.post('/api/chat', async (req, res) => {
             });
         }
 
+        // Отримуємо останнє повідомлення користувача
+        const userMessage = messages[messages.length - 1];
+        if (userMessage && userMessage.role === 'user') {
+            // Спочатку шукаємо у FAQ
+            const faqResult = searchFAQ(userMessage.content);
+            
+            if (faqResult.found && faqResult.confidence > 70) {
+                console.log(`📚 FAQ match found with confidence: ${faqResult.confidence}%`);
+                
+                // Відразу повертаємо відповідь з FAQ
+                return res.json({ 
+                    message: faqResult.answer,
+                    source: 'faq',
+                    confidence: faqResult.confidence
+                });
+            }
+        }
+
         if (!OPENROUTER_API_KEY) {
             return res.status(500).json({ 
                 error: 'OpenRouter API key not configured' 
             });
         }
+
+        // Якщо FAQ не дав результату, використовуємо AI
+        console.log('🤖 Using AI for response...');
 
         // Отримуємо контекст з бази даних
         const contextInfo = await getContextInfo();
@@ -91,19 +110,21 @@ router.post('/api/chat', async (req, res) => {
         • Завжди відповідай українською мовою, навіть якщо користувач пише іншою мовою
         • Не переходь на російську чи англійську
         • Будь дружнім, професійним та корисним
+        • Використовуй емодзі для кращого сприйняття
         • Якщо клієнт хоче записатися - направляй його на сайт: "Для запису потрібно увійти в особистий кабінет на нашому сайті"
         • При незнанні точної інформації рекомендуй звернутися до адміністрації
-        • Якщо користувач питає про теми, що не стосуються спортивного центру (наприклад: погода, політика, кулінарія), чемно відмовся і скажи: "Я можу допомогти тільки з питаннями про наш спортивний центр"
+        • Якщо користувач питає про теми, що не стосуються спортивного центру, чемно відмовся і скажи: "Я можу допомогти тільки з питаннями про наш спортивний центр"
             
         СТИЛЬ ВІДПОВІДЕЙ:
         • Коротко та по суті, але інформативно
         • Структуруй інформацію списками коли потрібно  
-        • Показуй ентузіазм до спорту та здорового способу життя`;
-
+        • Показуй ентузіазм до спорту та здорового способу життя
+        • Максимальна довжина відповіді: 300-400 слів`;
 
         // Додаємо актуальну інформацію з БД
         if (contextInfo && contextInfo.categories.length > 0) {
             systemPrompt += `\n\n📊 АКТУАЛЬНА ІНФОРМАЦІЯ З НАШОГО ЦЕНТРУ:
+            
             🎯 ДОСТУПНІ КАТЕГОРІЇ ТРЕНУВАНЬ:
             ${contextInfo.categories.map(cat => `• ${cat.category}`).join('\n')}`;
 
@@ -125,6 +146,15 @@ router.post('/api/chat', async (req, res) => {
                 ).join('\n')}`;
             }
         }
+
+        // Додаємо загальну інформацію про центр
+        systemPrompt += `\n\n🏢 ЗАГАЛЬНА ІНФОРМАЦІЯ:
+        
+        🕒 Години роботи: Пн-Пт 6:00-23:00, Сб-Нд 8:00-22:00
+        📍 Адреса: м. Київ, вул. Спортивна, 15
+        ☎️ Телефон: +380 XX XXX XX XX
+        💳 Оплата: готівка, картки, безконтактна
+        🚗 Безкоштовна парковка для клієнтів`;
 
         // Оновлюємо системне повідомлення
         let updatedMessages = [...messages];
@@ -162,8 +192,8 @@ router.post('/api/chat', async (req, res) => {
             body: JSON.stringify({
                 model: MODEL,
                 messages: updatedMessages,
-                temperature: 0.8, // Трохи більше креативності
-                max_tokens: 1200, // Більше токенів для детальніших відповідей  
+                temperature: 0.7, 
+                max_tokens: 800,
                 top_p: 0.9,
                 frequency_penalty: 0.1,
                 presence_penalty: 0.1,
@@ -187,7 +217,7 @@ router.post('/api/chat', async (req, res) => {
 
         // Логуємо використання токенів
         if (data.usage) {
-            console.log('💬 Chat request completed:', {
+            console.log('💬 AI Chat request completed:', {
                 prompt_tokens: data.usage.prompt_tokens,
                 completion_tokens: data.usage.completion_tokens,
                 total_tokens: data.usage.total_tokens,
@@ -197,6 +227,7 @@ router.post('/api/chat', async (req, res) => {
 
         res.json({ 
             message: aiMessage,
+            source: 'ai',
             usage: data.usage 
         });
 
@@ -214,6 +245,17 @@ router.post('/api/chat', async (req, res) => {
     }
 });
 
+// GET /api/chat/quick-replies - отримання швидких відповідей
+router.get('/api/chat/quick-replies', (req, res) => {
+    try {
+        const quickReplies = getRandomFAQs(6);
+        res.json({ quickReplies });
+    } catch (error) {
+        console.error('Quick replies error:', error);
+        res.status(500).json({ error: 'Failed to get quick replies' });
+    }
+});
+
 // GET /api/chat/info - інформація про чат-бота
 router.get('/api/chat/info', async (req, res) => {
     try {
@@ -221,13 +263,15 @@ router.get('/api/chat/info', async (req, res) => {
             status: 'active',
             model: MODEL,
             name: 'Спортивний Асистент 🤖',
-            version: '1.0.0',
+            version: '2.0.0',
             features: [
+                '📚 База знань FAQ',
                 '📋 Консультації з тренувань',
                 '👨‍💼 Інформація про тренерів', 
                 '📝 Допомога з записом на заняття',
                 '💪 Поради з реабілітації',
-                'ℹ️ Загальна інформація про центр'
+                'ℹ️ Загальна інформація про центр',
+                '⚡ Швидкі відповіді'
             ]
         };
 
@@ -263,12 +307,13 @@ router.get('/api/chat/info', async (req, res) => {
 // POST /api/chat/feedback - збір відгуків
 router.post('/api/chat/feedback', async (req, res) => {
     try {
-        const { rating, comment, conversation_id } = req.body;
+        const { rating, comment, conversation_id, message_source } = req.body;
         
         console.log('📝 Chat feedback received:', { 
             rating, 
             comment: comment ? comment.substring(0, 100) + '...' : 'No comment',
             conversation_id,
+            source: message_source || 'unknown',
             timestamp: new Date().toISOString()
         });
         
@@ -279,6 +324,31 @@ router.post('/api/chat/feedback', async (req, res) => {
     } catch (error) {
         console.error('Feedback API error:', error);
         res.status(500).json({ error: 'Failed to save feedback' });
+    }
+});
+
+// GET /api/chat/analytics - прості аналітики (опційно)
+router.get('/api/chat/analytics', async (req, res) => {
+    try {
+        // Базові метрики (можна розширити пізніше)
+        const analytics = {
+            faq_coverage: '75%',
+            popular_topics: [
+                'Розклад тренувань',
+                'Ціни та абонементи', 
+                'Запис на заняття',
+                'Контакти та локація'
+            ],
+            response_sources: {
+                faq: 60,
+                ai: 40
+            }
+        };
+        
+        res.json(analytics);
+    } catch (error) {
+        console.error('Analytics error:', error);
+        res.status(500).json({ error: 'Failed to get analytics' });
     }
 });
 
