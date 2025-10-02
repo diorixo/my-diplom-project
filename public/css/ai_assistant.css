@@ -383,9 +383,7 @@
     }
 }
 
-/* Додай цей CSS в кінець файлу public/css/chat-widget.css */
-
-/* === ШВИДКІ ВІДПОВІДІ === */
+/* ШВИДКІ ВІДПОВІДІ */
 .quick-replies {
     margin: 16px 0;
     padding: 0 4px;
@@ -434,7 +432,7 @@
     transform: translateY(0);
 }
 
-/* === ІНДИКАТОРИ ДЖЕРЕЛА === */
+/* ІНДИКАТОРИ ДЖЕРЕЛА */
 .source-indicator {
     margin-top: 6px;
     text-align: left;
@@ -444,7 +442,7 @@
     align-self: flex-start;
 }
 
-/* === СИСТЕМА ФІДБЕКУ === */
+/* СИСТЕМА ФІДБЕКУ */
 .message-feedback {
     margin-top: 8px;
     padding: 8px 0;
@@ -501,7 +499,7 @@
     animation: slideIn 0.3s ease;
 }
 
-/* === КНОПКА ОЧИЩЕННЯ ЧАТУ === */
+/* КНОПКА ОЧИЩЕННЯ ЧАТУ */
 .clear-chat-btn {
     background: none;
     border: none;
@@ -522,7 +520,7 @@
     height: 16px;
 }
 
-/* === ПОКРАЩЕНІ ПОВІДОМЛЕННЯ === */
+/* ПОКРАЩЕНІ ПОВІДОМЛЕННЯ */
 .message-content {
     line-height: 1.5;
 }
@@ -546,7 +544,7 @@
     margin: 4px 0;
 }
 
-/* === АНІМАЦІЇ === */
+/* АНІМАЦІЇ */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -578,7 +576,7 @@
     }
 }
 
-/* === ПОКРАЩЕНИЙ RESPONSIVE === */
+/* ПОКРАЩЕНИЙ RESPONSIVE */
 @media (max-width: 768px) {
     .quick-replies-buttons {
         justify-content: stretch;
@@ -618,7 +616,7 @@
     }
 }
 
-/* === СТАТУСИ ПІДКЛЮЧЕННЯ === */
+/* СТАТУСИ ПІДКЛЮЧЕННЯ */
 .status.offline {
     color: #f87171 !important;
 }
@@ -629,7 +627,7 @@
     margin-right: 4px;
 }
 
-/* === ПОКРАЩЕННЯ СКРОЛБАРУ === */
+/* ПОКРАЩЕННЯ СКРОЛБАРУ */
 .chat-messages::-webkit-scrollbar {
     width: 6px;
 }
@@ -648,7 +646,7 @@
     background: #94a3b8;
 }
 
-/* === ДОДАТКОВІ ПОКРАЩЕННЯ === */
+/* ДОДАТКОВІ ПОКРАЩЕННЯ */
 .chat-header {
     position: relative;
     overflow: hidden;
@@ -680,17 +678,7 @@
     background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
 }
 
-/* === HOVER ЕФЕКТИ === */
-.message:hover {
-    transform: translateX(2px);
-    transition: transform 0.2s ease;
-}
-
-.user-message:hover {
-    transform: translateX(-2px);
-}
-
-/* === ФОКУС СТИЛІ === */
+/* ФОКУС СТИЛІ */
 #chat-input:focus {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -700,7 +688,7 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
 }
 
-/* === ТЕМНА ТЕМА (ОПЦІОНАЛЬНО) === */
+/* ТЕМНА ТЕМА (ОПЦІОНАЛЬНО) */
 @media (prefers-color-scheme: dark) {
     .chat-window {
         background: #1e293b;
@@ -746,7 +734,7 @@
     }
 }
 
-/* === АНІМАЦІЇ ЗАВАНТАЖЕННЯ === */
+/* АНІМАЦІЇ ЗАВАНТАЖЕННЯ */
 .loading-dots {
     display: inline-flex;
     gap: 2px;
@@ -774,7 +762,7 @@
     }
 }
 
-/* === ПОКРАЩЕННЯ ДОСТУПНОСТІ === */
+/* ПОКРАЩЕННЯ ДОСТУПНОСТІ */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -783,7 +771,7 @@
     }
 }
 
-/* === HIGH CONTRAST MODE === */
+/* HIGH CONTRAST MODE */
 @media (prefers-contrast: high) {
     .chat-window {
         border: 2px solid #000;
@@ -802,14 +790,14 @@
     }
 }
 
-/* === PRINT СТИЛІ === */
+/* PRINT СТИЛІ */
 @media print {
     #ai-chat-widget {
         display: none;
     }
 }
 
-/* === ПОКРАЩЕННЯ ДЛЯ СЕНСОРНИХ ПРИСТРОЇВ === */
+/* ПОКРАЩЕННЯ ДЛЯ СЕНСОРНИХ ПРИСТРОЇВ */
 @media (hover: none) and (pointer: coarse) {
     .quick-reply-btn {
         min-height: 44px;

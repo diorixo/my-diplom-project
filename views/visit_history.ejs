@@ -1,21 +1,16 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ua">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Історія відвідувань</title>
     <link rel="stylesheet" href="/css/reset.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/ai_assistant.css">
     <link rel="stylesheet" href="/css/visit_history.css">
 </head>
-<body style="
-    background-image: url('/images/background/back.jpg');
-    background-attachment: fixed; 
-    background-size: cover; 
-    background-repeat: no-repeat;
-    background-position: center center;
-    min-height: 100vh;
-">
+<body>
     <%- include('blocks/header') -%>
     
     <main>
@@ -196,6 +191,7 @@
     </main>
 
     <%- include('blocks/footer') -%>
+    <%- include('blocks/ai_assistant') -%>
 
     <script src="/js/visit_history.js"></script>
 </body>

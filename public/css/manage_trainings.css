@@ -1,4 +1,17 @@
 /* CSS для сторінки управління тренуваннями - manage-trainings.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: linear-gradient(135deg, #f8f4ff 0%, #ede9fe 50%, #f5f3ff 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #1f2937;
+}
 
 .trainings-container {
     max-width: 1400px;
