@@ -8,6 +8,7 @@ CREATE TABLE users (
     gender VARCHAR(10),
     email VARCHAR(50) DEFAULT 'email@gmail.com',
     phone VARCHAR(50) DEFAULT '+1111111',
+	balance INT DEFAULT 0,
     role VARCHAR(255) DEFAULT 'user' NOT NULL,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT now() NOT NULL,
@@ -256,6 +257,114 @@ FOR EACH ROW
 EXECUTE FUNCTION update_trainer_rating();
 
 select * from reviews order by id;
+------------------------------------------------------
+
+-- Таблиця бонусного магазину --
+DROP TABLE IF EXISTS bonus_products CASCADE;
+CREATE TABLE IF NOT EXISTS bonus_products (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price INT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    image VARCHAR(500),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Індекси
+CREATE INDEX idx_category ON bonus_products (category);
+CREATE INDEX idx_active ON bonus_products (is_active);
+
+-- Тригер для таблиці bonus_products
+CREATE TRIGGER set_bonus_products_updated_at
+BEFORE UPDATE ON bonus_products
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+-- Вставка тестових товарів
+INSERT INTO bonus_products (name, description, price, category, image) VALUES
+('Спортивна футболка', 'Якісна спортивна футболка з логотипом центру. Матеріал: 100% бавовна', 500, 'clothing', 'tshirt.jpg'),
+('Абонемент на місяць', 'Безлімітний абонемент на всі види тренувань протягом місяця', 2000, 'subscriptions', 'subscription.jpg'),
+('Спортивна пляшка', 'Термопляшка для води 750мл. Підтримує температуру до 12 годин', 300, 'accessories', 'bottle.jpg'),
+('Рушник', 'М''який спортивний рушник з мікрофібри. Розмір: 80x40см', 400, 'accessories', 'towel.jpg'),
+('Гантелі 5кг', 'Набір гантелей для домашніх тренувань. Покриття: неопрен', 1500, 'equipment', 'dumbbells.jpg'),
+('Спортивні шорти', 'Зручні шорти для тренувань. Дихаючий матеріал', 600, 'clothing', 'shorts.jpg'),
+('Спортивна сумка', 'Велика спортивна сумка з відділенням для взуття', 800, 'accessories', 'bag.jpg'),
+('Абонемент на 3 місяці', 'Безлімітний абонемент на всі тренування на 3 місяці зі знижкою', 5000, 'subscriptions', 'subscription3.jpg'),
+('Рукавички для фітнесу', 'Професійні рукавички для силових тренувань', 250, 'accessories', 'gloves.jpg'),
+('Спортивний костюм', 'Комплект: штани та кофта. Ідеально для тренувань', 1200, 'clothing', 'tracksuit.jpg'),
+('Йога-мат', 'Килимок для йоги та пілатесу. Товщина: 6мм', 700, 'equipment', 'yoga-mat.jpg'),
+('Протеїновий шейкер', 'Шейкер для спортивного харчування 600мл', 200, 'accessories', 'shaker.jpg'),
+('Еспандер', 'Набір еспандерів з різним рівнем опору', 450, 'equipment', 'resistance-band.jpg'),
+('Спортивні кросівки', 'Професійні кросівки для тренувань. Різні розміри', 2500, 'clothing', 'sneakers.jpg'),
+('Персональна тренування', 'Одна індивідуальна тренування з тренером', 1000, 'subscriptions', 'personal-training.jpg');
+
+select * from bonus_products order by id;
+------------------------------------------------------
+
+-- Таблиця покупок --
+DROP TABLE IF EXISTS purchases CASCADE;
+CREATE TABLE IF NOT EXISTS purchases (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    price INT NOT NULL,
+    purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'completed',
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES bonus_products(id) ON DELETE RESTRICT
+);
+
+-- Індекси
+CREATE INDEX idx_user_id ON purchases (user_id);
+CREATE INDEX idx_purchase_date ON purchases (purchase_date);
+
+-- Тригер для таблиці purchases
+-- Функція для перевірки балансу
+CREATE OR REPLACE FUNCTION check_balance_before_purchase()
+RETURNS TRIGGER AS $$
+DECLARE
+    user_balance INT;
+    product_price INT;
+BEGIN
+    SELECT balance INTO user_balance FROM users WHERE id = NEW.user_id;
+    SELECT price INTO product_price FROM bonus_products WHERE id = NEW.product_id;
+
+    IF user_balance < product_price THEN
+        RAISE EXCEPTION 'Недостатньо балів на рахунку';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Тригер
+CREATE TRIGGER check_balance_before_purchase
+BEFORE INSERT ON purchases
+FOR EACH ROW
+EXECUTE FUNCTION check_balance_before_purchase();
+
+-- Функція для оновлення балансу
+CREATE OR REPLACE FUNCTION update_balance_after_purchase()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE users
+    SET balance = balance - (SELECT price FROM bonus_products WHERE id = NEW.product_id)
+    WHERE id = NEW.user_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Тригер
+CREATE TRIGGER update_balance_after_purchase
+AFTER INSERT ON purchases
+FOR EACH ROW
+EXECUTE FUNCTION update_balance_after_purchase();
+
+select * from purchases order by id;
 ------------------------------------------------------
 
 -- Інше --
