@@ -5,7 +5,7 @@ const {secretKey} = require('../services/secretKey')
 
 exports.registerUser = async (req, res) => {
     try {
-        const { username, firstname, lastname, gender, password } = req.body;
+        const { username, firstname, lastname, email, phone, gender, password } = req.body;
 
         const existsResult = await db.pool.query({
             text: 'select exists (select * from users where username = $1)',
@@ -17,8 +17,8 @@ exports.registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
       
-        const query = 'INSERT INTO users (username, firstname, lastname, gender, password) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-        const values = [username, firstname, lastname, gender, hashedPassword];
+        const query = 'INSERT INTO users (username, firstname, lastname, email, phone, gender, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+        const values = [username, firstname, lastname, email, phone, gender, hashedPassword];
         const { rows } = await db.pool.query(query, values);
         res.status(201).json({ message: `Користувач: ${username} зареєстрований під id: ${rows[0].id}` });
     } catch (err) {

@@ -81,7 +81,7 @@ header {
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 500px) {
     .header_inner {
         flex-direction: column;
         gap: 20px;

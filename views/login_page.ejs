@@ -1,68 +1,109 @@
 <!DOCTYPE html>
-<html lang="ua">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
-    <title>Login Page</title>
-    <link rel="stylesheet" href="css/login_page_style.css">
-    <script src="js/login_page.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід до системи</title>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/login_page.css">
 </head>
 <body>
-    <article class="container">
-        <div class="block">
-            <section class="block_item block-item">
-                <h2 class="block-item_title">Вже є аккаунт?</h2>
-                <button class="block-item_btn login-btn">Увійти</button>
-            </section>
-            <section class="block_item block-item">
-                <h2 class="block-item_title">Ще немає аккаунта?</h2>
-                <button class="block-item_btn register-btn">Зареєструватися</button>
-            </section>
-        </div>
-        <div class="form-box">
-            <form action="#" id="loginForm" class="form form_login">
-                <h3 class="form_title">Вхід</h3>
-                <p>
-                    <input type="text" id="username_input_login" name="username_input_login" class="form_input" placeholder="Логін" required>
-                </p>
-                <p>
-                    <input type="password" id="password_input_login" name="password_input_login" class="form_input" placeholder="Пароль" required>
-                </p>
-                <p id="login_msg"></p>
-                <p>
-                    <button type="submit" class="form_btn">Увійти</button>
-                </p>
-            </form>
 
-            <form action="#" id="registerForm" class="form form_register">
-                <h3 class="form_title">Реєстрація</h3>
-                <p>
-                    <input type="text" id="username_input_register" name="username_input_register" class="form_input" placeholder="Логін" required>
-                </p>
-                <p>
-                    <input type="text" id="firstname_input_register" name="firstname_input_register" class="form_input" placeholder="Ім'я" required>
-                </p>
-                <p>
-                    <input type="text" id="lastname_input_register" name="lastname_input_register" class="form_input" placeholder="Прізвище" required>
-                </p>
-                <p>
-                    <input type="radio" id="male_input_register" name="gender_input_register" class="radio_input" value="male" checked>
-                    <label for="male_input_register">Чоловік</label>
-                    <input type="radio" id="female_input_register" name="gender_input_register" class="radio_input" value="female" >
-                    <label for="female_input_register">Жінка</label>
-                </p>
-                <p>
-                    <input type="password" id="password_input_register" name="password_input_register" class="form_input" placeholder="Пароль" required>
-                </p>
-                <p>
-                    <input type="password" id="password_input_register_confirm" name="password_input_register_confirm" class="form_input" placeholder="Підтвердіть пароль" required>
-                </p>
-                <p id="register_msg"></p>
-                <p>
-                    <button type="submit" class="form_btn form_btn_register">Зареєструватися</button>
-                </p>
-            </form>
+    <%- include('blocks/header') -%>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="tabs">
+                <button class="tab active" data-tab="login">Вхід</button>
+                <button class="tab" data-tab="register">Реєстрація</button>
+                <div class="tab-indicator"></div>
+            </div>
+
+            <div class="form-container">
+                <div class="form-wrapper">
+                    <form class="form" id="loginForm">
+                        <h2 class="form-title">Вітаємо знову</h2>
+
+                        <div id="login_msg" class="message"></div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="username_input_login">Логін</label>
+                            <input type="text" id="username_input_login" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="password_input_login">Пароль</label>
+                            <input type="password" id="password_input_login" class="input-field" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Увійти</button>
+                    </form>
+
+                    <form class="form" id="registerForm">
+                        <h2 class="form-title">Створити акаунт</h2>
+
+                        <div id="register_msg" class="message"></div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="username_input_register">Логін</label>
+                            <input type="text" id="username_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="firstname_input_register">Ім'я</label>
+                            <input type="text" id="firstname_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="lastname_input_register">Прізвище</label>
+                            <input type="text" id="lastname_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="email_input_register">Пошта</label>
+                            <input type="email" id="email_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="phone_input_register">Телефон</label>
+                            <input type="tel" id="phone_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Стать</label>
+                            <div class="gender-group">
+                                <div class="gender-option">
+                                    <input type="radio" id="male_input_register" name="gender_input_register" value="male" checked>
+                                    <label class="gender-label" for="male_input_register">Чоловік</label>
+                                </div>
+                                <div class="gender-option">
+                                    <input type="radio" id="female_input_register" name="gender_input_register" value="female">
+                                    <label class="gender-label" for="female_input_register">Жінка</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="password_input_register">Пароль</label>
+                            <input type="password" id="password_input_register" class="input-field" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label" for="password_input_register_confirm">Підтвердіть пароль</label>
+                            <input type="password" id="password_input_register_confirm" class="input-field" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Зареєструватися</button>
+                    </form>
+                </div>
+            </div>
         </div>
-    </article>
+    </main>
+
+    <%- include('blocks/footer') -%>
+
+    <script src="/js/login_page.js"></script>
 </body>
 </html>

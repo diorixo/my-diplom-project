@@ -21,6 +21,7 @@ app.use(require('./routes/trainer_route'))
 app.use(require('./routes/booking_route'))
 app.use(require('./routes/chat_route'))
 app.use(require('./routes/analytics_route'));
+app.use(require('./routes/bonus_shop_route'));
 
 app.get('/', (req, res) => {
     res.render('index')
@@ -52,6 +53,10 @@ app.get('/training', authFunctions.authenticateToken, (req, res) => {
 
 app.get('/user/visit_history', authFunctions.authenticateToken, (req, res) => {
     res.render('visit_history')
+})
+
+app.get('/bonus_shop', authFunctions.authenticateToken, (req, res) => {
+    res.render('bonus_shop')
 })
 
 //не використвується

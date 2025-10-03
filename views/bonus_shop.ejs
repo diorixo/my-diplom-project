@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Бонусний магазин</title>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/ai_assistant.css">
+    <link rel="stylesheet" href="/css/bonus_shop.css">
+</head>
+<body>
+    <%- include('blocks/header') -%>
+    
+    <main class="shop-container">
+        <section class="shop-header">
+            <h1>Бонусний магазин</h1>
+            <div class="user-balance">
+                <span class="balance-label">Ваш баланс:</span>
+                <span class="balance-amount" id="userBalance">0</span>
+                <span class="balance-currency">балів</span>
+            </div>
+        </section>
+
+        <section class="filters">
+            <div class="filter-group">
+                <label for="categoryFilter">Категорія:</label>
+                <select id="categoryFilter">
+                    <option value="all">Всі товари</option>
+                    <option value="clothing">Одяг</option>
+                    <option value="equipment">Обладнання</option>
+                    <option value="accessories">Аксесуари</option>
+                    <option value="subscriptions">Абонементи</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortFilter">Сортувати:</label>
+                <select id="sortFilter">
+                    <option value="default">За замовчуванням</option>
+                    <option value="price-asc">Ціна: за зростанням</option>
+                    <option value="price-desc">Ціна: за спаданням</option>
+                    <option value="name">За назвою</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="products-grid" id="productsGrid">
+            <!-- Товари будуть завантажені через JS -->
+        </section>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Завантаження товарів...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <p>Помилка завантаження товарів. Спробуйте пізніше.</p>
+        </div>
+    </main>
+
+    <!-- Модальне вікно для підтвердження покупки -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <h2>Підтвердження покупки</h2>
+            <div class="modal-body">
+                <img id="modalProductImage" src="" alt="">
+                <h3 id="modalProductName"></h3>
+                <p class="modal-price">
+                    <span id="modalProductPrice"></span> балів
+                </p>
+                <p class="modal-description" id="modalProductDescription"></p>
+                <div class="modal-balance-info">
+                    <p>Ваш баланс: <span id="modalCurrentBalance"></span> балів</p>
+                    <p>Після покупки: <span id="modalNewBalance"></span> балів</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCancel">Скасувати</button>
+                <button class="btn-confirm" id="btnConfirm">Підтвердити покупку</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Повідомлення про успішну покупку -->
+    <div class="notification" id="notification">
+        <p id="notificationText"></p>
+    </div>
+
+    <%- include('blocks/footer') -%>
+    <%- include('blocks/ai_assistant') -%>
+
+    <script src="/js/bonus_shop.js"></script>
+</body>
+</html>
