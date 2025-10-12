@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 const init = async () => {
     try {
         await Promise.all([loadCategories(), loadTrainers()]);
+        await loadUserBookings();
         await loadTrainings();
     } catch (err) {
         console.error('Помилка ініціалізації:', err);
@@ -150,7 +151,7 @@ const loadTrainings = async () => {
                     id: trainer.id,
                     name: `${trainer.firstname} ${trainer.lastname}`,
                     specialization: trainer.specialization || 'unknown',
-                    avatar: trainer.avatar || 'NO'
+                    avatar: `${trainer.firstname[0]}${trainer.lastname[0]}`.toUpperCase()
                 } : {
                     id: null,
                     name: 'unknown',
@@ -165,6 +166,15 @@ const loadTrainings = async () => {
                 currentParticipants: t.current_participants,
                 isBooked: false
             };
+
+            // Перевіряємо чи користувач записаний на це тренування
+            const userBooking = userBookings.find(booking => booking.training.id === t.id);
+            console.log(userBookings)
+            console.log(t.id)
+            if (userBooking) {
+                console.log('123')
+                training.isBooked = true;
+            }
 
             // Визначаємо статус тренування
             if (isTrainingExpired(training)) {
@@ -191,17 +201,46 @@ const loadTrainings = async () => {
     }
 }
 
+// Отримання початку тижня
+function getWeekStart(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+}
+
+// Отримання дат тижня
+function getWeekDates(startDate) {
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
+        dates.push(date);
+    }
+    return dates;
+}
+
 // Відображення тренувань
 function displayTrainings() {
+    if (currentView === 'day') {
+        displayDayView();
+    } else if (currentView === 'week') {
+        displayWeekView();
+    }
+}
+
+// День-вид
+function displayDayView() {
     const trainingGrid = document.getElementById('trainingGrid');
     trainingGrid.innerHTML = '';
+    trainingGrid.classList.remove('week-view');
     
     const filteredTrainings = applyCurrentFilters();
     
     if (filteredTrainings.length === 0) {
         trainingGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
-                <h3>😔 Тренування не знайдені</h3>
+                <h3>Тренування не знайдені</h3>
                 <p>Спробуйте змінити фільтри або оберіть іншу дату</p>
             </div>
         `;
@@ -214,7 +253,95 @@ function displayTrainings() {
     });
 }
 
-// Створення картки тренування
+// Тиждень-вид
+function displayWeekView() {
+    const trainingGrid = document.getElementById('trainingGrid');
+    trainingGrid.innerHTML = '';
+    trainingGrid.classList.add('week-view');
+    
+    const weekStart = getWeekStart(currentDate);
+    const weekDates = getWeekDates(weekStart);
+    
+    weekDates.forEach(date => {
+        const dayColumn = document.createElement('div');
+        dayColumn.className = 'week-day-column';
+        
+        // Заголовок дня
+        const dayName = date.toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric' });
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'week-day-header';
+        dayHeader.textContent = dayName;
+        dayColumn.appendChild(dayHeader);
+        
+        // Контейнер для тренувань
+        const trainingsContainer = document.createElement('div');
+        trainingsContainer.className = 'week-trainings-container';
+        
+        // Фільтруємо тренування на цей день з урахуванням фільтрів
+        const dateStr = date.toISOString().split('T')[0];
+        const dayTrainings = trainings.filter(t => {
+            const tDate = t.date;
+            const year = tDate.getFullYear();
+            const month = String(tDate.getMonth() + 1).padStart(2, '0');
+            const day = String(tDate.getDate()).padStart(2, '0');
+            const trainingDate = `${year}-${month}-${day}`;
+            
+            if (trainingDate !== dateStr) {
+                return false;
+            }
+            
+            // Застосовуємо фільтри
+            const typeFilter = document.getElementById('typeFilter').value;
+            const trainerFilter = document.getElementById('trainerFilter').value;
+            const timeFilter = document.getElementById('timeFilter').value;
+            
+            // Фільтр по типу
+            if (typeFilter && t.type !== typeFilter) {
+                return false;
+            }
+            
+            // Фільтр по тренеру
+            if (trainerFilter && t.trainer.id.toString() !== trainerFilter) {
+                return false;
+            }
+            
+            // Фільтр по часу
+            if (timeFilter) {
+                const hour = parseInt(t.time.split(':')[0]);
+                switch (timeFilter) {
+                    case 'morning':
+                        if (hour < 6 || hour >= 12) return false;
+                        break;
+                    case 'afternoon':
+                        if (hour < 12 || hour >= 18) return false;
+                        break;
+                    case 'evening':
+                        if (hour < 18 || hour >= 22) return false;
+                        break;
+                }
+            }
+            
+            return true;
+        }).sort((a, b) => a.time.localeCompare(b.time));
+        
+        if (dayTrainings.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'week-empty-day';
+            emptyMessage.textContent = 'Немає тренувань';
+            trainingsContainer.appendChild(emptyMessage);
+        } else {
+            dayTrainings.forEach(training => {
+                const trainingItem = createWeekTrainingItem(training);
+                trainingsContainer.appendChild(trainingItem);
+            });
+        }
+        
+        dayColumn.appendChild(trainingsContainer);
+        trainingGrid.appendChild(dayColumn);
+    });
+}
+
+// Створення картки тренування (день-вид)
 function createTrainingCard(training) {
     const card = document.createElement('div');
     card.className = `training-card ${training.status}`;
@@ -228,22 +355,22 @@ function createTrainingCard(training) {
     if (training.status === 'expired') {
         statusText = 'Минуло';
         statusClass = 'status-expired';
-        buttonText = '⏰ Минуло';
+        buttonText = 'Минуло';
         isDisabled = true;
     } else if (training.status === 'full') {
         statusText = 'Немає місць';
         statusClass = 'status-full';
-        buttonText = '❌ Немає місць';
+        buttonText = 'Немає місць';
         isDisabled = true;
     } else if (training.isBooked) {
         statusText = 'Записаний';
         statusClass = 'status-booked';
-        buttonText = '✅ Записаний';
+        buttonText = 'Записаний';
         isDisabled = true;
     } else {
         statusText = 'Доступно';
         statusClass = 'status-available';
-        buttonText = '📝 Записатися';
+        buttonText = 'Записатися';
         isDisabled = false;
     }
     
@@ -261,7 +388,7 @@ function createTrainingCard(training) {
             </div>
         </div>
         <div class="training-details">
-            <span class="duration">⏱️ ${training.duration}</span>
+            <span class="duration">⏱ ${training.duration}</span>
             <span class="price">💰 ${training.price} грн</span>
         </div>
         <div class="participants">
@@ -277,6 +404,45 @@ function createTrainingCard(training) {
     return card;
 }
 
+// Створення елемента тренування для тижневого виду
+function createWeekTrainingItem(training) {
+    const item = document.createElement('div');
+    item.className = `week-training-item ${training.status}`;
+    if (training.isBooked) {
+        item.classList.add('booked');
+    }
+    
+    let statusIcon = '';
+    if (training.isBooked) {
+        statusIcon = '✓';
+    } else if (training.status === 'full') {
+        statusIcon = '✕';
+    } else if (training.status === 'expired') {
+        statusIcon = '−';
+    }
+    
+    const isDisabled = !canBookTraining(training);
+    
+    item.innerHTML = `
+        <div class="week-item-header">
+            <div class="week-item-time">${training.time.slice(0, 5)}</div>
+            ${statusIcon ? `<div class="week-item-status-icon">${statusIcon}</div>` : ''}
+        </div>
+        <div class="week-item-name">${training.name}</div>
+        <div class="week-item-trainer">${training.trainer.name}</div>
+        <div class="week-item-meta">
+            <span>${training.currentParticipants}/${training.maxParticipants}</span>
+            <span>${training.price} грн</span>
+        </div>
+    `;
+    
+    if (!isDisabled) {
+        item.onclick = () => openBookingModal(training.id);
+    }
+    
+    return item;
+}
+
 // Застосування поточних фільтрів
 function applyCurrentFilters() {
     const dateFilter = document.getElementById('dateFilter').value;
@@ -288,7 +454,7 @@ function applyCurrentFilters() {
         // Фільтр по даті
         const date = training.date;
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // місяці від 0
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const trainingDate = `${year}-${month}-${day}`;
         if (dateFilter && trainingDate !== dateFilter) {
@@ -347,19 +513,19 @@ function setView(view) {
     });
     event.target.classList.add('active');
     
-    // Поки що реалізуємо тільки денний вид
-    if (view === 'week') {
-        alert('Тижневий вид буде доданий пізніше');
-        setView('day');
-        return;
-    }
+    // Оновлюємо відображення дати для нового виду
+    updateDateDisplay();
     
     displayTrainings();
 }
 
 // Зміна дати
 function changeDate(delta) {
-    currentDate.setDate(currentDate.getDate() + delta);
+    if (currentView === 'week') {
+        currentDate.setDate(currentDate.getDate() + (delta * 7));
+    } else {
+        currentDate.setDate(currentDate.getDate() + delta);
+    }
     
     // Не дозволяємо вибирати минулі дати
     const today = new Date();
@@ -391,21 +557,32 @@ function updateDateDisplay() {
     
     const dateDisplay = document.getElementById('currentDateDisplay');
     
-    if (displayDate.getTime() === today.getTime()) {
-        dateDisplay.textContent = 'Сьогодні';
-    } else {
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    if (currentView === 'week') {
+        const weekStart = getWeekStart(currentDate);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
         
-        if (displayDate.getTime() === tomorrow.getTime()) {
-            dateDisplay.textContent = 'Завтра';
+        const startStr = weekStart.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+        const endStr = weekEnd.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+        
+        dateDisplay.textContent = `Тиждень: ${startStr} - ${endStr}`;
+    } else {
+        if (displayDate.getTime() === today.getTime()) {
+            dateDisplay.textContent = 'Сьогодні';
         } else {
-            dateDisplay.textContent = currentDate.toLocaleDateString('uk-UA', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (displayDate.getTime() === tomorrow.getTime()) {
+                dateDisplay.textContent = 'Завтра';
+            } else {
+                dateDisplay.textContent = currentDate.toLocaleDateString('uk-UA', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
         }
     }
 }
@@ -418,13 +595,13 @@ function openBookingModal(trainingId) {
     if (!training || !canBookTraining(training)) {
         // Показуємо відповідне повідомлення залежно від причини
         if (training.status === 'full') {
-            alert('❌ На це тренування немає вільних місць');
+            alert('На це тренування немає вільних місць');
         } else if (training.isBooked) {
-            alert('✅ Ви вже записані на це тренування');
+            alert('Ви вже записані на це тренування');
         } else if (training.status === 'expired') {
-            alert('⏰ Це тренування вже минуло або розпочалося');
+            alert('Це тренування вже минуло або розпочалося');
         } else {
-            alert('❌ Неможливо записатися на це тренування');
+            alert('Неможливо записатися на це тренування');
         }
         return;
     }
@@ -464,7 +641,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Додаткова перевірка перед відправкою
             if (!canBookTraining(selectedBooking)) {
-                alert('❌ Неможливо записатися на це тренування (можливо, воно вже минуло або переповнене)');
+                alert('Неможливо записатися на це тренування');
                 closeModal();
                 return;
             }
@@ -493,10 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayTrainings();
                     displayUserBookings();
                     
-                    // Закриваємо модальне вікно через 2 секунди
-                    setTimeout(() => {
-                        closeModal();
-                    }, 2000);
+                    closeModal();
                     
                 } else {
                     const errorData = await response.json();
@@ -528,7 +702,7 @@ async function loadUserBookings() {
             training: {
                 ...booking.training,
                 date: new Date(booking.training.date),
-                time: booking.training.time.slice(0, 5) // залишаємо тільки HH:MM
+                time: booking.training.time.slice(0, 5)
             }
         }));
 
@@ -546,7 +720,7 @@ function displayUserBookings() {
     if (userBookings.length === 0) {
         bookingsList.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #666;">
-                <h4>📝 Записів поки немає</h4>
+                <h4>Записів поки немає</h4>
                 <p>Оберіть тренування зі списку вище та створіть свій перший запис!</p>
             </div>
         `;
@@ -564,16 +738,16 @@ function displayUserBookings() {
         bookingItem.innerHTML = `
             <div class="booking-info">
                 <h4>${booking.training.name}</h4>
-                <p>🧑 Тренер: ${booking.training.trainer.name}</p>
-                <p>📅 ${booking.training.date.toLocaleDateString('uk-UA')} о ${booking.training.time}</p>
-                <p>⏱️ Тривалість: ${booking.training.duration}</p>
-                ${booking.notes ? `<p>📝 Примітки: ${booking.notes}</p>` : ''}
+                <p>Тренер: ${booking.training.trainer.name}</p>
+                <p>${booking.training.date.toLocaleDateString('uk-UA')} о ${booking.training.time}</p>
+                <p>Тривалість: ${booking.training.duration}</p>
+                ${booking.notes ? `<p>Примітки: ${booking.notes}</p>` : ''}
             </div>
             <div class="booking-actions">
                 <button class="cancel-btn" 
                         onclick="openCancelModal(${booking.id})"
                         ${!canCancel ? 'disabled style="opacity: 0.5;"' : ''}>
-                    ${!canCancel ? '🕐 Не можна скасувати' : '❌ Скасувати'}
+                    ${!canCancel ? 'Не можна скасувати' : 'Скасувати'}
                 </button>
             </div>
         `;
@@ -655,8 +829,6 @@ async function confirmCancel() {
             
             // Закриваємо модальне вікно
             closeCancelModal();
-            
-            alert('✅ Запис успішно скасовано!');
             
         } else {
             const errorData = await response.json();

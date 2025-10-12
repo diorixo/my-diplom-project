@@ -58,11 +58,12 @@ exports.getUserBookings = async (req, res) => {
 
         const query = `
             SELECT 
-                b.id AS id,
+                b.id,
+                b.training_id,
                 b.notes,
                 b.created_at AS bookingDate,
                 b.attendance,
-                t.name AS name,
+                t.name,
                 t.date,
                 t.time,
                 t.duration,
@@ -80,6 +81,7 @@ exports.getUserBookings = async (req, res) => {
         const result = rows.map(row => ({
             id: row.id,
             training: {
+                id: row.training_id,
                 name: row.name,
                 trainer: { name: row.trainer_name },
                 date: row.date,
