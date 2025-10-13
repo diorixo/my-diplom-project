@@ -63,7 +63,7 @@ exports.loginUser = async (req, res) => {
 exports.getUserData = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const query = 'SELECT id, username, role, firstname, lastname, gender, email, phone, TO_CHAR(created_at, \'DD.MM.YYYY\') AS created_date FROM users WHERE id = $1';
+        const query = 'SELECT id, username, role, firstname, lastname, gender, balance, email, phone, TO_CHAR(created_at, \'DD.MM.YYYY\') AS created_date FROM users WHERE id = $1';
         const values = [userId];
         const { rows } = await db.pool.query(query, values);
         if (rows.length === 0) {
@@ -88,6 +88,7 @@ exports.getUserData = async (req, res) => {
             firstname: user.firstname,
             lastname: user.lastname,
             gender: user.gender,
+            balance: user.balance,
             email: user.email,
             phone: user.phone,
             created_at: user.created_date,

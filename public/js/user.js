@@ -1,9 +1,17 @@
-// JavaScript для сторінки користувача спорт залу - account.js
+// JavaScript для сторінки користувача спорт залу - оновлений
 
 // Отримання посилань на елементи
 const userDataContainer = document.getElementById('userContent');
 const loadingMessage = document.getElementById('loadingMessage');
 const errorMessage = document.getElementById('errorMessage');
+
+// Функція для розрахунку прогресу місяця
+function calculateMonthProgress(visitCount) {
+    // Припустимо, що ціль - 20 відвідувань на місяць
+    const monthlyGoal = 20;
+    const progress = Math.min(Math.round((visitCount / monthlyGoal) * 100), 100);
+    return progress;
+}
 
 // Функція завантаження даних користувача
 const fetchUserData = async () => {
@@ -23,9 +31,20 @@ const fetchUserData = async () => {
         document.getElementById('username').textContent = data.username;
         document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';
         document.getElementById('email').textContent = data.email;
-        document.getElementById('phone').textContent = data.phone;
+        document.getElementById('phone').textContent = data.phone || 'Не вказано';
         document.getElementById('memberSince').textContent = data.created_at;
-        document.getElementById('visitCount').textContent = data.visit_count; 
+        document.getElementById('totalTrainings').textContent = data.total_visits || 0; 
+        
+        // Відображаємо баланс бонусів
+        const balance = data.balance || 0;
+        document.getElementById('bonusBalance').textContent = balance;
+        
+        // Розраховуємо та відображаємо прогрес місяця
+        const progress = calculateMonthProgress(data.visit_count);
+        const progressBar = document.getElementById('monthProgress');
+        progressBar.style.width = progress + '%';
+        document.getElementById('progressPercentText').textContent = progress + '%';
+        document.getElementById('currentVisits').textContent = data.visit_count || 0;
         
         // Встановлюємо відповідне зображення залежно від статі
         const profileImage = document.getElementById('profileImage');
@@ -67,7 +86,9 @@ function editProfile() {
     document.getElementById('editLastName').value = nameParts[1] || '';
     document.getElementById('editUsername').value = document.getElementById('username').textContent;
     document.getElementById('editEmail').value = document.getElementById('email').textContent;
-    document.getElementById('editPhone').value = document.getElementById('phone').textContent;
+    
+    const phoneText = document.getElementById('phone').textContent;
+    document.getElementById('editPhone').value = phoneText === 'Не вказано' ? '' : phoneText;
     
     const genderText = document.getElementById('gender').textContent;
     document.getElementById('editGender').value = genderText === 'Чоловік' ? 'male' : 'female';
@@ -99,19 +120,6 @@ function logout() {
         window.location.href = '/logout';
     }
 }
-
-// Симуляція живих даних (можна замінити на реальні API виклики)
-// function updateLiveData() {
-//     // Оновлюємо статистику відвідувань (симуляція)
-//     const visitCount = Math.floor(Math.random() * 30) + 10;
-//     document.getElementById('visitCount').textContent = visitCount;
-    
-//     // Оновлюємо прогрес
-//     const progress = Math.floor(Math.random() * 100);
-//     const progressBar = document.getElementById('monthProgress');
-//     progressBar.style.width = progress + '%';
-//     progressBar.textContent = progress + '%';
-// }
 
 // Ініціалізація модального вікна
 const modal = document.getElementById('editModal');
@@ -171,7 +179,7 @@ editForm.onsubmit = async function(e) {
             document.getElementById('fullName').textContent = `${updateData.firstName} ${updateData.lastName}`;
             document.getElementById('username').textContent = updateData.username;
             document.getElementById('email').textContent = updateData.email;
-            document.getElementById('phone').textContent = updateData.phone;
+            document.getElementById('phone').textContent = updateData.phone || 'Не вказано';
             document.getElementById('gender').textContent = updateData.gender === 'male' ? 'Чоловік' : 'Жінка';
                 
             // Оновлюємо фото відповідно до статі
@@ -196,6 +204,3 @@ editForm.onsubmit = async function(e) {
 };
 
 fetchUserData();
-
-// Оновлюємо деякі дані кожні 30 секунд (опціонально)
-// setInterval(updateLiveData, 30000);

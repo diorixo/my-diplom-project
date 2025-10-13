@@ -41,79 +41,74 @@
                 <!-- Статистика -->
                 <div class="profile-stats">
                     <div class="stat-card">
-                        <h3 id="visitCount">1</h3>
-                        <p>Відвідувань цього місяця</p>
+                        <p>Член клубу з</p>
+                        <h3 id="memberSince">2023</h3>
                     </div>
                     <div class="stat-card">
-                        <h3 id="memberSince">2023</h3>
-                        <p>Член клубу з</p>
+                        <p>Всього тренувань</p>
+                        <h3 id="totalTrainings">0</h3>
+                    </div>
+                </div>
+
+                <!-- Бонусна картка -->
+                <div class="bonus-card-large">
+                    <div class="bonus-content">
+                        <h2>Ваші бонуси</h2>
+                        <div class="bonus-amount" id="bonusBalance">0</div>
+                        <p class="bonus-description">Обмінюйте бонуси на одяг, обладнання, аксесуари та абонементи в бонусному магазині</p>
+                    </div>
+                    <div class="bonus-progress-section">
+                        <div class="progress-label">
+                            <span>Прогрес цього місяця</span>
+                            <span id="progressPercentText">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="monthProgress" class="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p class="progress-hint"><span id="currentVisits">0</span> з 20 відвідувань</p>
                     </div>
                 </div>
 
                 <!-- Основний контент -->
-                <div class="content-grid">
-                    <div class="info-card">
-                        <h2>📋 Особиста інформація</h2>
-                        <div class="info-row">
-                            <span class="info-label">Ім'я користувача:</span>
-                            <span id="username" class="info-value">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Стать:</span>
-                            <span id="gender" class="info-value">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Email:</span>
-                            <span id="email" class="info-value">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Телефон:</span>
-                            <span id="phone" class="info-value">-</span>
-                        </div>
+                <div class="info-card info-card-single">
+                    <h2>Особиста інформація</h2>
+                    <div class="info-row">
+                        <span class="info-label">Ім'я користувача:</span>
+                        <span id="username" class="info-value">-</span>
                     </div>
-
-                    <div class="membership-card">
-                        <h2>🏃‍♂️ Членство</h2>
-                        <div class="info-row">
-                            <span class="info-label">Статус:</span>
-                            <span id="membershipStatus" class="membership-status status-active">Активне</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Тип членства:</span>
-                            <span id="membershipType" class="info-value">Преміум</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Дійсне до:</span>
-                            <span id="membershipExpiry" class="info-value">31.12.2024</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Прогрес місяця:</span>
-                            <div class="progress-bar">
-                                <div id="monthProgress" class="progress-fill" style="width: 65%">65%</div>
-                            </div>
-                        </div>
+                    <div class="info-row">
+                        <span class="info-label">Стать:</span>
+                        <span id="gender" class="info-value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span id="email" class="info-value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Телефон:</span>
+                        <span id="phone" class="info-value">-</span>
                     </div>
                 </div>
 
                 <!-- Дії -->
                 <div class="actions-grid">
                     <button class="action-btn" onclick="editProfile()">
-                        ✏️ Редагувати профіль
+                        Редагувати профіль
                     </button>
                     <button class="action-btn" onclick="viewSchedule()">
-                        📅 Розклад занять
+                        Розклад занять
                     </button>
                     <button class="action-btn" onclick="bookTraining()">
-                        🏋️‍♂️ Записатися на тренування
+                        Записатися на тренування
                     </button>
                     <button class="action-btn" onclick="viewHistory()">
-                        📊 Історія відвідувань
+                        Історія відвідувань
                     </button>
                     <button class="action-btn" onclick="paymentHistory()">
-                        💳 Платежі
+                        Платежі
                     </button>
                     <button class="action-btn secondary" onclick="logout()">
-                        🚪 Вийти
+                        Вийти з акаунту
                     </button>
                 </div>
             </div>
@@ -123,7 +118,7 @@
         <div id="editModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2>✏️ Редагувати профіль</h2>
+                    <h2>Редагувати профіль</h2>
                     <span class="close">&times;</span>
                 </div>
 
