@@ -684,6 +684,12 @@ body {
     overflow-y: hidden;
     padding: 4px 0;
     scroll-behavior: smooth;
+    user-select: none;
+    cursor: grab;
+}
+
+.training-grid.week-view:active {
+    cursor: grabbing;
 }
 
 .training-grid.week-view::-webkit-scrollbar {
@@ -904,12 +910,8 @@ body {
     }
 
     .date-navigation {
-        flex-direction: row;
-        justify-content: space-between;
+        flex-direction: column;
         gap: 10px;
-        width: 100%;
-        max-width: 320px;
-        margin: 0 auto;
     }
 
     .training-grid {
