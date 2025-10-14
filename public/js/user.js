@@ -33,7 +33,7 @@ const fetchUserData = async () => {
         document.getElementById('email').textContent = data.email;
         document.getElementById('phone').textContent = data.phone || 'Не вказано';
         document.getElementById('memberSince').textContent = data.created_at;
-        document.getElementById('totalTrainings').textContent = data.total_visits || 0; 
+        document.getElementById('totalTrainings').textContent = data.visit_count || 0; 
         
         // Відображаємо баланс бонусів
         const balance = data.balance || 0;
@@ -97,22 +97,12 @@ function editProfile() {
     document.body.style.overflow = 'hidden'; // Блокуємо скролл фону
 }
 
-function viewSchedule() {
-    alert('Перенаправлення на розклад занять...');
-    // window.location.href = '/schedule';
-}
-
 function bookTraining() {
     window.location.href = '/training';
 }
 
 function viewHistory() {
     window.location.href = '/user/visit_history';
-}
-
-function paymentHistory() {
-    alert('Перенаправлення на історію платежів...');
-    // window.location.href = '/payments';
 }
 
 function logout() {

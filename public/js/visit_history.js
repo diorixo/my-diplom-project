@@ -73,6 +73,7 @@ async function loadVisitHistory() {
         visitHistory = data.map(item => ({
             ...item,
             date: new Date(item.date),
+            time: item.time.slice(0,5), // Форматуємо час у вигляді 13:25 (без секунд)
             bookingDate: new Date(item.bookingDate),
             completedAt: item.completedAt ? new Date(item.completedAt) : null
         }));

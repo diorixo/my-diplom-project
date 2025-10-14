@@ -72,12 +72,10 @@ exports.getUserData = async (req, res) => {
         const user = rows[0];
 
         const visit_result = await db.pool.query(`
-            SELECT COUNT(DISTINCT b.training_id) AS visit_count
-            FROM bookings b
-            JOIN trainings t ON b.training_id = t.id
-            WHERE b.user_id = $1
-                AND b.attendance = 'attended'
-                AND date_trunc('month', t.date) = date_trunc('month', CURRENT_DATE);
+            SELECT COUNT(*) AS visit_count
+            FROM bookings
+            WHERE user_id = $1
+                AND attendance = 'attended';
         `, [userId]);
         const visit_count = visit_result.rows[0].visit_count;
 
