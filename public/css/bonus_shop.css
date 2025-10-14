@@ -8,7 +8,6 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f5f5f5;
     color: #333;
-    line-height: 1.6;
 }
 
 .shop-container {
@@ -32,12 +31,12 @@ body {
 }
 
 .user-balance {
-    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     padding: 15px 30px;
     border-radius: 10px;
     color: white;
     font-size: 1.2rem;
-    box-shadow: 0 4px 6px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3);
 }
 
 .balance-amount {
@@ -102,6 +101,7 @@ body {
     flex-direction: column;
     cursor: pointer;
     user-select: none;
+    border: 2px solid #7c3aed;
 }
 
 .product-card:hover {
@@ -179,7 +179,8 @@ body {
 }
 
 .btn-buy {
-    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -191,8 +192,8 @@ body {
 }
 
 .btn-buy:hover {
-    background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 .btn-buy:disabled {
@@ -382,7 +383,8 @@ body {
 .btn-confirm {
     padding: 12px 24px;
     border: none;
-    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
     color: white;
     border-radius: 8px;
     font-size: 1rem;
@@ -392,8 +394,8 @@ body {
 }
 
 .btn-confirm:hover {
-    background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 .notification {
