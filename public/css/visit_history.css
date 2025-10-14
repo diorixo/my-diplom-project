@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background: linear-gradient(135deg, #f8f4ff 0%, #ede9fe 50%, #f5f3ff 100%);
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #faf5ff 100%);
     background-attachment: fixed;
     min-height: 100vh;
     color: #1f2937;
@@ -24,24 +24,27 @@ body {
 .page-header {
     text-align: center;
     margin-bottom: 40px;
-    padding: 30px 20px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(240, 248, 255, 0.9));
-    border-radius: 20px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(167, 139, 250, 0.05));
+    border-radius: 24px;
     backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 .page-header h1 {
     font-size: 2.5rem;
-    color: #2c3e50;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 10px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
 }
 
 .page-header p {
     font-size: 1.1rem;
-    color: #7f8c8d;
+    color: #6b7280;
     margin: 0;
 }
 
@@ -61,11 +64,10 @@ body {
     display: flex;
     align-items: center;
     padding: 25px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.1);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -77,15 +79,16 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #3498db, #2ecc71, #e74c3c, #f39c12);
+    height: 4px;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa, #c4b5fd);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
 }
 
 .stat-card:hover::before {
@@ -93,42 +96,52 @@ body {
 }
 
 .stat-icon {
-    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    border-radius: 12px;
+    font-size: 1.8rem;
     margin-right: 20px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .stat-info h3 {
     font-size: 2rem;
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 0 0 5px 0;
 }
 
 .stat-info p {
     font-size: 0.9rem;
-    color: #7f8c8d;
+    color: #6b7280;
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 500;
 }
 
 /* Секція фільтрів */
 .filters-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
-    border-radius: 15px;
+    background: white;
+    border-radius: 16px;
     padding: 30px;
     margin-bottom: 40px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
 .filters-section h2 {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: #1f2937;
     margin-bottom: 25px;
     text-align: center;
+    font-weight: 600;
 }
 
 .filters-grid {
@@ -145,39 +158,37 @@ body {
 
 .filter-group label {
     font-weight: 600;
-    color: #34495e;
+    color: #374151;
     margin-bottom: 8px;
     font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .filter-group select {
     padding: 12px 15px;
-    border: 2px solid #e9ecef;
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
     background: white;
     font-size: 1rem;
-    color: #495057;
+    color: #1f2937;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
 .filter-group select:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .filter-group select:hover {
-    border-color: #3498db;
+    border-color: #a78bfa;
 }
 
 .apply-filters-btn {
     display: block;
     margin: 0 auto;
     padding: 12px 30px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
     border: none;
     border-radius: 25px;
@@ -185,12 +196,13 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
 }
 
 .apply-filters-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
 }
 
 .apply-filters-btn:active {
@@ -199,12 +211,11 @@ body {
 
 /* Секція історії */
 .history-section {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
-    border-radius: 15px;
+    background: white;
+    border-radius: 16px;
     padding: 30px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
 .section-header {
@@ -218,34 +229,39 @@ body {
 
 .section-header h2 {
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: #1f2937;
     margin: 0;
+    font-weight: 600;
 }
 
 .view-options {
     display: flex;
-    background: #f8f9fa;
+    background: #f9fafb;
     border-radius: 10px;
     padding: 5px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .view-btn {
     padding: 10px 20px;
     border: none;
     background: transparent;
-    color: #6c757d;
+    color: #6b7280;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 500;
 }
 
-.view-btn.active,
-.view-btn:hover {
-    background: white;
-    color: #3498db;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.view-btn.active {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.view-btn:hover:not(.active) {
+    background: #f3f4f6;
+    color: #7c3aed;
 }
 
 /* Завантаження */
@@ -253,11 +269,10 @@ body {
     text-align: center;
     padding: 60px 20px;
     font-size: 1.2rem;
-    color: #6c757d;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    color: #6b7280;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
 }
 
 /* Список історії */
@@ -269,11 +284,11 @@ body {
 
 .history-item {
     background: white;
-    border-radius: 15px;
+    border-radius: 16px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    border-left: 4px solid #e9ecef;
+    border-left: 4px solid #e5e7eb;
     position: relative;
     overflow: hidden;
 }
@@ -289,24 +304,24 @@ body {
 }
 
 .history-item.attended::before {
-    background: linear-gradient(180deg, #2ecc71, #27ae60);
+    background: linear-gradient(180deg, #10b981, #059669);
 }
 
 .history-item.not_attended::before {
-    background: linear-gradient(180deg, #f39c12, #e67e22);
+    background: linear-gradient(180deg, #f59e0b, #d97706);
 }
 
 .history-item.pending::before {
-    background: linear-gradient(180deg, #3498db, #2980b9);
+    background: linear-gradient(180deg, #7c3aed, #6d28d9);
 }
 
 .history-item.cancelled::before {
-    background: linear-gradient(180deg, #e74c3c, #c0392b);
+    background: linear-gradient(180deg, #ef4444, #dc2626);
 }
 
 .history-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.12);
 }
 
 .history-header {
@@ -320,12 +335,12 @@ body {
 
 .training-name {
     font-size: 1.3rem;
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #1f2937;
 }
 
 .status-badge {
-    padding: 6px 15px;
+    padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -334,27 +349,27 @@ body {
 }
 
 .status-attended {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border: 1px solid #6ee7b7;
 }
 
 .status-not_attended {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-    color: #856404;
-    border: 1px solid #ffeaa7;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border: 1px solid #fcd34d;
 }
 
 .status-pending {
-    background: linear-gradient(135deg, #d0e7ff, #a8d0ff);
-    color: #1b4f72;
-    border: 1px solid #a8d0ff;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #5b21b6;
+    border: 1px solid #c4b5fd;
 }
 
 .status-cancelled {
-    background: linear-gradient(135deg, #f8d7da, #f1c6c8);
-    color: #721c24;
-    border: 1px solid #f1c6c8;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border: 1px solid #fca5a5;
 }
 
 .history-info {
@@ -368,13 +383,14 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #495057;
+    color: #4b5563;
     font-size: 0.95rem;
 }
 
 .info-item span:first-child {
-    font-size: 1.1rem;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
 }
 
 .history-actions {
@@ -384,45 +400,46 @@ body {
 }
 
 .action-btn {
-    padding: 8px 20px;
+    padding: 10px 20px;
     border: none;
     border-radius: 20px;
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .btn-details {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
+    background: linear-gradient(135deg, #6b7280, #4b5563);
     color: white;
 }
 
 .btn-details:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+    background: linear-gradient(135deg, #4b5563, #374151);
 }
 
 .btn-rate {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
 }
 
 .btn-rate:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
 }
 
 .btn-edit {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
 }
 
 .btn-edit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
 }
 
 /* Календарний вигляд */
@@ -437,7 +454,7 @@ body {
     gap: 30px;
     margin-bottom: 30px;
     padding: 20px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, #faf5ff, #f5f3ff);
     border-radius: 15px;
 }
 
@@ -445,25 +462,30 @@ body {
     padding: 10px 15px;
     border: none;
     background: white;
-    color: #495057;
+    color: #6b7280;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.2rem;
     font-weight: bold;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
 }
 
 .nav-btn:hover {
-    background: #3498db;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
-    transform: scale(1.1);
+    border-color: #7c3aed;
+    transform: scale(1.05);
 }
 
 #currentMonthDisplay {
     font-size: 1.3rem;
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 700;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     min-width: 200px;
     text-align: center;
 }
@@ -472,27 +494,27 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
-    background: #dee2e6;
-    border-radius: 10px;
+    background: #e5e7eb;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
 }
 
 .calendar-header {
-    background: linear-gradient(135deg, #495057, #343a40);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
-    padding: 15px 10px;
+    padding: 15px 5px;
     text-align: center;
-    font-weight: bold;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .calendar-day {
     background: white;
-    min-height: 120px;
-    padding: 8px;
+    min-height: 100px;
+    padding: 6px;
     position: relative;
     transition: all 0.3s ease;
     cursor: default;
@@ -501,29 +523,35 @@ body {
 }
 
 .calendar-day:hover {
-    background: #f8f9fa;
+    background: #faf5ff;
 }
 
 .calendar-day.today {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    font-weight: bold;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
 }
 
 .calendar-day.other-month {
-    background: #f8f9fa;
-    color: #adb5bd;
+    background: #f9fafb;
+    color: #9ca3af;
 }
 
 .day-number {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
     align-self: flex-start;
 }
 
 .calendar-day.today .day-number {
-    color: #1976d2;
+    color: #7c3aed;
+    background: white;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .day-trainings {
@@ -532,18 +560,17 @@ body {
     gap: 3px;
     flex-grow: 1;
     overflow-y: auto;
-    max-height: 90px;
+    max-height: 75px;
 }
 
 .day-training {
     padding: 4px 6px;
     border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 32px;
+    min-height: 28px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -553,55 +580,61 @@ body {
 .day-training:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 10;
-    border-color: rgba(255, 255, 255, 0.8);
 }
 
 .training-short-name {
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.1;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .training-time {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     opacity: 0.8;
     line-height: 1;
 }
 
 .day-training.attended {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    color: #155724;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-color: #6ee7b7;
 }
 
 .day-training.attended:hover {
-    background: linear-gradient(135deg, #c3e6cb, #b8dcc2);
+    background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
 }
 
 .day-training.not_attended {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-    color: #856404;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border-color: #fcd34d;
 }
 
 .day-training.not_attended:hover {
-    background: linear-gradient(135deg, #ffeaa7, #ffe082);
+    background: linear-gradient(135deg, #fde68a, #fcd34d);
 }
 
 .day-training.pending {
-    background: linear-gradient(135deg, #d0e7ff, #a8d0ff);
-    color: #1b4f72;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #5b21b6;
+    border-color: #c4b5fd;
 }
 
 .day-training.pending:hover {
-    background: linear-gradient(135deg, #a8d0ff, #90c4ff);
+    background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
 }
 
 .day-training.cancelled {
-    background: linear-gradient(135deg, #f8d7da, #f1c6c8);
-    color: #721c24;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
+    border-color: #fca5a5;
 }
 
 .day-training.cancelled:hover {
-    background: linear-gradient(135deg, #f1c6c8, #e8b4b8);
+    background: linear-gradient(135deg, #fecaca, #fca5a5);
 }
 
 /* Пагінація */
@@ -616,31 +649,32 @@ body {
 
 .page-btn {
     padding: 10px 20px;
-    border: 2px solid #3498db;
+    border: 2px solid #7c3aed;
     background: white;
-    color: #3498db;
+    color: #7c3aed;
     border-radius: 25px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
 .page-btn:hover:not(:disabled) {
-    background: #3498db;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .page-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
-    transform: none;
+    border-color: #d1d5db;
+    color: #9ca3af;
 }
 
 .page-info {
-    font-weight: 500;
-    color: #495057;
+    font-weight: 600;
+    color: #374151;
     padding: 0 20px;
 }
 
@@ -667,12 +701,12 @@ body {
     background: white;
     margin: 5% auto;
     padding: 0;
-    border-radius: 20px;
+    border-radius: 24px;
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(124, 58, 237, 0.3);
     animation: slideIn 0.3s ease;
     position: relative;
 }
@@ -693,14 +727,15 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 25px 30px;
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
-    border-radius: 20px 20px 0 0;
+    border-radius: 24px 24px 0 0;
 }
 
 .modal-header h2 {
     margin: 0;
     font-size: 1.4rem;
+    font-weight: 700;
 }
 
 .close {
@@ -709,10 +744,17 @@ body {
     cursor: pointer;
     color: rgba(255, 255, 255, 0.8);
     transition: color 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 .close:hover {
     color: white;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .training-details-modal {
@@ -724,11 +766,12 @@ body {
 }
 
 .detail-section h3 {
-    color: #2c3e50;
+    color: #1f2937;
     margin-bottom: 20px;
     font-size: 1.2rem;
+    font-weight: 700;
     padding-bottom: 10px;
-    border-bottom: 2px solid #ecf0f1;
+    border-bottom: 2px solid #ede9fe;
 }
 
 .detail-row {
@@ -736,63 +779,72 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid #f8f9fa;
+    border-bottom: 1px solid #f3f4f6;
     flex-wrap: wrap;
     gap: 10px;
 }
 
 .detail-label {
     font-weight: 600;
-    color: #495057;
+    color: #6b7280;
     min-width: 150px;
 }
 
 .detail-value {
-    color: #2c3e50;
-    font-weight: 500;
+    color: #1f2937;
+    font-weight: 600;
     text-align: right;
     flex: 1;
+}
+
+.detail-actions {
+    margin-top: 20px;
+    text-align: center;
 }
 
 /* Форма оцінки */
 .rating-section {
     text-align: center;
     padding: 30px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(135deg, #faf5ff, #f5f3ff);
     margin: 30px;
-    border-radius: 15px;
+    border-radius: 16px;
 }
 
 .rating-section h3 {
-    color: #2c3e50;
+    color: #1f2937;
     margin-bottom: 20px;
     font-size: 1.3rem;
+    font-weight: 700;
 }
 
 .rating-stars {
     display: flex;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
     margin: 20px 0;
 }
 
 .star {
-    font-size: 2rem;
+    font-size: 2.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
     filter: grayscale(1);
+    opacity: 0.3;
 }
 
 .star:hover,
 .star.active {
     filter: grayscale(0);
+    opacity: 1;
     transform: scale(1.2);
 }
 
 #ratingText {
-    font-weight: 500;
-    color: #6c757d;
+    font-weight: 600;
+    color: #7c3aed;
     margin: 10px 0 0 0;
+    font-size: 1.1rem;
 }
 
 .form-group {
@@ -802,15 +854,16 @@ body {
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #495057;
+    color: #374151;
     margin-bottom: 10px;
+    text-align: left;
 }
 
 .form-group textarea {
     width: 100%;
     padding: 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
     resize: vertical;
     font-family: inherit;
     font-size: 1rem;
@@ -819,8 +872,8 @@ body {
 
 .form-group textarea:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .modal-buttons {
@@ -828,8 +881,8 @@ body {
     justify-content: flex-end;
     gap: 15px;
     padding: 25px 30px;
-    background: #f8f9fa;
-    border-radius: 0 0 20px 20px;
+    background: #f9fafb;
+    border-radius: 0 0 24px 24px;
 }
 
 .btn {
@@ -839,29 +892,29 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     font-size: 0.9rem;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
     color: white;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+    background: linear-gradient(135deg, #6d28d9, #5b21b6);
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
+    background: linear-gradient(135deg, #6b7280, #4b5563);
     color: white;
 }
 
 .btn-secondary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+    background: linear-gradient(135deg, #4b5563, #374151);
 }
 
 /* Адаптивність */
@@ -871,7 +924,7 @@ body {
     }
     
     .page-header {
-        padding: 20px 15px;
+        padding: 30px 15px;
     }
     
     .page-header h1 {
@@ -919,13 +972,45 @@ body {
     }
     
     .calendar-navigation {
-        flex-direction: column;
+        flex-direction: row;
         gap: 15px;
+        padding: 15px;
+    }
+    
+    #currentMonthDisplay {
+        font-size: 1rem;
+        min-width: auto;
     }
     
     .calendar-day {
         min-height: 80px;
+        padding: 4px;
+        font-size: 0.75rem;
+    }
+    
+    .day-number {
         font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+    
+    .day-trainings {
+        max-height: 55px;
+        gap: 2px;
+    }
+    
+    .day-training {
+        padding: 3px 4px;
+        font-size: 0.6rem;
+        min-height: 24px;
+    }
+    
+    .training-short-name {
+        font-size: 0.6rem;
+        margin-bottom: 1px;
+    }
+    
+    .training-time {
+        font-size: 0.55rem;
     }
     
     .pagination {
@@ -952,7 +1037,7 @@ body {
     }
     
     .star {
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
     
     .form-group {
@@ -988,6 +1073,10 @@ body {
         font-size: 1.5rem;
     }
     
+    .page-header p {
+        font-size: 0.95rem;
+    }
+    
     .stat-card {
         flex-direction: column;
         text-align: center;
@@ -1000,16 +1089,60 @@ body {
     }
     
     .calendar-grid {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
+        gap: 0.5px;
+    }
+    
+    .calendar-header {
+        padding: 10px 3px;
+        font-size: 0.7rem;
     }
     
     .calendar-day {
-        min-height: 60px;
-        padding: 4px;
+        min-height: 70px;
+        padding: 3px;
+    }
+    
+    .day-number {
+        font-size: 0.75rem;
+    }
+    
+    .calendar-day.today .day-number {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+    
+    .day-trainings {
+        max-height: 45px;
     }
     
     .day-training {
-        font-size: 0.6rem;
+        padding: 2px 3px;
+        font-size: 0.55rem;
+        min-height: 20px;
+    }
+    
+    .training-short-name {
+        font-size: 0.55rem;
+    }
+    
+    .training-time {
+        font-size: 0.5rem;
+    }
+    
+    .calendar-navigation {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .nav-btn {
+        padding: 8px 12px;
+        font-size: 1rem;
+    }
+    
+    #currentMonthDisplay {
+        font-size: 0.9rem;
     }
 }
 
@@ -1040,40 +1173,47 @@ body {
     }
 }
 
-/* Стилі для скролбара */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #2980b9, #21618c);
-}
-
 /* Стилі для фокуса (доступність) */
 button:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid #3498db;
+    outline: 2px solid #7c3aed;
     outline-offset: 2px;
 }
 
 /* Додаткові стилі для покращення UX */
 .history-item:focus-within {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
 }
 
 .calendar-day[style*="cursor: pointer"]:hover {
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb) !important;
-    transform: scale(1.02);
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe) !important;
+    transform: scale(1.01);
+}
+
+/* Стилі для відгуку в списку */
+.review-item {
+    grid-column: 1 / -1;
+}
+
+.review-text {
+    font-style: italic;
+    color: #6b7280;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Покращення календаря для мобільних */
+@media (max-width: 768px) {
+    .day-training {
+        overflow: hidden;
+    }
+    
+    .training-short-name,
+    .training-time {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
