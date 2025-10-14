@@ -6,19 +6,19 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background: linear-gradient(135deg, #f8f4ff 0%, #ede9fe 50%, #f5f3ff 100%);
+    background: linear-gradient(135deg, #f3e5ff 0%, #e8deff 50%, #f0e6ff 100%);
     background-attachment: fixed;
     min-height: 100vh;
-    color: #1f2937;
+    color: #2d1b4e;
 }
 
 .trainer-container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(123, 81, 181, 0.15);
     margin-top: 40px;
     margin-bottom: 40px;
 }
@@ -28,7 +28,7 @@ body {
     align-items: center;
     gap: 40px;
     padding: 30px 0;
-    border-bottom: 3px solid #f0f0f0;
+    border-bottom: 3px solid #f0e6ff;
     margin-bottom: 30px;
     position: relative;
 }
@@ -42,9 +42,9 @@ body {
     height: 180px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid #e74c3c;
+    border: 5px solid #7b51b5;
     transition: transform 0.3s ease;
-    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+    box-shadow: 0 10px 30px rgba(123, 81, 181, 0.25);
 }
 
 .trainer-photo img:hover {
@@ -52,7 +52,7 @@ body {
 }
 
 .trainer-info h1 {
-    color: #2c3e50;
+    color: #2d1b4e;
     margin-bottom: 10px;
     font-size: 2.5em;
     font-weight: bold;
@@ -66,12 +66,12 @@ body {
 }
 
 .stars {
-    color: #f39c12;
+    color: #b589d6;
     font-size: 1.5em;
 }
 
 .rating-value {
-    background: #f39c12;
+    background: #b589d6;
     color: white;
     padding: 5px 12px;
     border-radius: 15px;
@@ -86,7 +86,7 @@ body {
 }
 
 .stat-card {
-    padding: 25px;
+    padding: 30px;
     border-radius: 15px;
     text-align: center;
     color: white;
@@ -112,24 +112,16 @@ body {
     z-index: 1;
 }
 
-.stat-card.sessions {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-}
-
-.stat-card.revenue {
-    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-}
-
-.stat-card.schedule {
-    background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+.stat-card {
+    background: linear-gradient(135deg, #9c6fd6 0%, #8b5fc8 100%);
 }
 
 .stat-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(123, 81, 181, 0.3);
 }
 
-.stat-card h3 {
+.stat-number {
     font-size: 2.5em;
     margin-bottom: 10px;
     font-weight: bold;
@@ -137,7 +129,7 @@ body {
 
 .stat-card p {
     opacity: 0.95;
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .content-grid {
@@ -151,8 +143,8 @@ body {
     background: white;
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-left: 5px solid #e74c3c;
+    box-shadow: 0 8px 25px rgba(123, 81, 181, 0.1);
+    border-left: 5px solid #7b51b5;
     transition: transform 0.3s ease;
 }
 
@@ -161,24 +153,22 @@ body {
 }
 
 .professional-card {
-    border-left-color: #3498db;
+    border-left-color: #9c6fd6;
 }
 
 .schedule-card {
-    border-left-color: #f39c12;
+    border-left-color: #b589d6;
 }
 
 .reviews-card {
-    border-left-color: #27ae60;
+    border-left-color: #8b5fc8;
 }
 
 .info-card h2, .professional-card h2, .schedule-card h2, .reviews-card h2 {
-    color: #2c3e50;
+    color: #2d1b4e;
     margin-bottom: 25px;
     font-size: 1.6em;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    font-weight: 600;
 }
 
 .info-row {
@@ -186,7 +176,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid #f0e6ff;
 }
 
 .info-row:last-child {
@@ -194,13 +184,13 @@ body {
 }
 
 .info-label {
-    font-weight: bold;
-    color: #7f8c8d;
+    font-weight: 600;
+    color: #9c6fd6;
     flex: 1;
 }
 
 .info-value {
-    color: #2c3e50;
+    color: #2d1b4e;
     font-weight: 500;
     flex: 1;
     text-align: right;
@@ -208,29 +198,28 @@ body {
 
 /* Розклад */
 .schedule-list {
-    max-height: 400px; /* обмежує висоту блоку */
-    overflow-y: auto;  /* вертикальна прокрутка */
+    max-height: 400px;
+    overflow-y: auto;
     padding-right: 5px;
-    scroll-behavior: smooth; /* плавний скрол */
+    scroll-behavior: smooth;
 }
 
-/* Кастомний скрол для Webkit-браузерів */
 .schedule-list::-webkit-scrollbar {
     width: 8px;
 }
 
 .schedule-list::-webkit-scrollbar-track {
-    background: #f0f0f0;
+    background: #f0e6ff;
     border-radius: 8px;
 }
 
 .schedule-list::-webkit-scrollbar-thumb {
-    background: #f39c12;;
+    background: #b589d6;
     border-radius: 8px;
 }
 
 .schedule-list::-webkit-scrollbar-thumb:hover {
-    background: #f8b549;
+    background: #9c6fd6;
 }
 
 .schedule-item {
@@ -238,39 +227,46 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    background: #f9f7fc;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(123, 81, 181, 0.08);
     margin-bottom: 15px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    border-left: 4px solid #7b51b5;
+}
+
+.schedule-item:hover {
+    box-shadow: 0 6px 20px rgba(123, 81, 181, 0.12);
 }
 
 .schedule-left {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    flex: 1;
 }
 
 .schedule-left .date-time {
     font-size: 0.9em;
-    color: #7f8c8d;
+    color: #9c6fd6;
 }
 
 .schedule-left .training-name {
     font-size: 1.2em;
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 600;
+    color: #2d1b4e;
 }
 
 .schedule-left .category {
     font-size: 0.9em;
-    color: #2980b9;
+    color: #7b51b5;
     margin-top: 3px;
 }
 
 .schedule-middle {
     font-size: 0.9em;
-    color: #7f8c8d;
+    color: #9c6fd6;
+    margin: 0 20px;
 }
 
 .schedule-right {
@@ -281,51 +277,43 @@ body {
 }
 
 .schedule-right .price {
-    font-weight: bold;
-    color: #27ae60;
+    font-weight: 600;
+    color: #7b51b5;
 }
 
 .schedule-right .duration {
     font-size: 0.85em;
-    color: #f39c12;
-    background: #fdf6e3;
-    padding: 3px 8px;
+    color: #7b51b5;
+    background: #f0e6ff;
+    padding: 4px 10px;
     border-radius: 12px;
 }
 
 /* Відгуки */
-.review-list {
-    max-height: 400px; /* обмежує висоту блоку */
-    overflow-y: auto;  /* вертикальна прокрутка */
-    padding-right: 5px;
-    scroll-behavior: smooth; /* плавний скрол */
-}
-
-/* Кастомний скрол для Webkit-браузерів */
 .reviews-list::-webkit-scrollbar {
     width: 8px;
 }
 
 .reviews-list::-webkit-scrollbar-track {
-    background: #f0f0f0;
+    background: #f0e6ff;
     border-radius: 8px;
 }
 
 .reviews-list::-webkit-scrollbar-thumb {
-    background: #27ae60;
+    background: #8b5fc8;
     border-radius: 8px;
 }
 
 .reviews-list::-webkit-scrollbar-thumb:hover {
-    background: #2ecc71;
+    background: #7b51b5;
 }
 
 .review-item {
     margin-bottom: 20px;
     padding: 15px;
-    background: #f8f9fa;
+    background: #f9f7fc;
     border-radius: 10px;
-    border-left: 4px solid #27ae60;
+    border-left: 4px solid #8b5fc8;
 }
 
 .review-item:last-child {
@@ -340,12 +328,12 @@ body {
 }
 
 .reviewer {
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 600;
+    color: #2d1b4e;
 }
 
 .review-rating {
-    color: #f39c12;
+    color: #b589d6;
 }
 
 .review-text {
@@ -368,7 +356,7 @@ body {
     text-decoration: none;
     border-radius: 12px;
     text-align: center;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.3s ease;
     border: none;
     cursor: pointer;
@@ -377,48 +365,24 @@ body {
     overflow: hidden;
 }
 
-.action-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s;
+.action-btn {
+    background: linear-gradient(45deg, #9c6fd6, #8b5fc8);
 }
 
-.action-btn:hover::before {
-    left: 100%;
-}
-
-.action-btn.primary {
-    background: linear-gradient(45deg, #e74c3c, #c0392b);
-}
-
-.action-btn.primary:hover {
-    background: linear-gradient(45deg, #c0392b, #a93226);
+.action-btn:hover {
+    background: linear-gradient(45deg, #8b5fc8, #7a4eb0);
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
-}
-
-.action-btn.secondary {
-    background: linear-gradient(45deg, #3498db, #2980b9);
-}
-
-.action-btn.secondary:hover {
-    background: linear-gradient(45deg, #2980b9, #1f618d);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 10px 25px rgba(156, 111, 214, 0.3);
 }
 
 .action-btn.logout {
-    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
 }
 
 .action-btn.logout:hover {
-    background: linear-gradient(45deg, #7f8c8d, #6c7b7d);
-    transform: translateY(-3px);
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4);
 }
 
 /* Стилі повідомлень */
@@ -426,29 +390,29 @@ body {
     text-align: center;
     padding: 60px;
     font-size: 1.3em;
-    color: #7f8c8d;
+    color: #9c6fd6;
 }
 
 .error-message {
-    background: #f8d7da;
-    color: #721c24;
+    background: #fce4ec;
+    color: #880e4f;
     padding: 20px;
     border-radius: 10px;
     margin: 30px 0;
-    border-left: 5px solid #dc3545;
+    border-left: 5px solid #c2185b;
 }
 
 .success-message {
-    background: #d4edda;
-    color: #155724;
+    background: #e8f5e9;
+    color: #1b5e20;
     padding: 15px;
     border-radius: 8px;
     margin: 15px 0;
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #4caf50;
     display: none;
 }
 
-/* Модальне вікно для редагування тренера */
+/* Модальне вікно */
 .modal {
     display: none;
     position: fixed;
@@ -458,7 +422,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(45, 27, 78, 0.7);
     backdrop-filter: blur(8px);
 }
 
@@ -469,7 +433,7 @@ body {
     border-radius: 20px;
     width: 90%;
     max-width: 700px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 25px 60px rgba(123, 81, 181, 0.2);
     position: relative;
     animation: modalSlideIn 0.4s ease-out;
 }
@@ -491,17 +455,17 @@ body {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 3px solid #f0f0f0;
+    border-bottom: 3px solid #f0e6ff;
 }
 
 .modal-header h2 {
-    color: #2c3e50;
+    color: #2d1b4e;
     font-size: 2em;
     margin: 0;
 }
 
 .close {
-    color: #aaa;
+    color: #b589d6;
     font-size: 32px;
     font-weight: bold;
     cursor: pointer;
@@ -515,11 +479,11 @@ body {
 }
 
 .close:hover {
-    color: #e74c3c;
-    background: #f8f9fa;
+    color: #7b51b5;
+    background: #f0e6ff;
 }
 
-/* Форма редагування тренера */
+/* Форма */
 .form-group {
     margin-bottom: 25px;
 }
@@ -527,8 +491,8 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 10px;
-    font-weight: bold;
-    color: #2c3e50;
+    font-weight: 600;
+    color: #2d1b4e;
     font-size: 1.1em;
 }
 
@@ -537,20 +501,20 @@ body {
 .form-group textarea {
     width: 100%;
     padding: 15px 20px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #e8deff;
     border-radius: 10px;
     font-size: 1em;
     transition: all 0.3s ease;
     box-sizing: border-box;
-    background: #fafafa;
+    background: #fafbff;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #e74c3c;
-    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+    border-color: #7b51b5;
+    box-shadow: 0 0 0 4px rgba(123, 81, 181, 0.1);
     background: white;
 }
 
@@ -571,7 +535,7 @@ body {
     justify-content: flex-end;
     margin-top: 40px;
     padding-top: 25px;
-    border-top: 3px solid #f0f0f0;
+    border-top: 3px solid #f0e6ff;
 }
 
 .btn {
@@ -580,7 +544,7 @@ body {
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.1em;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.3s ease;
     text-decoration: none;
     display: inline-block;
@@ -588,23 +552,23 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, #e74c3c, #c0392b);
+    background: linear-gradient(45deg, #7b51b5, #6a40a3);
     color: white;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(45deg, #c0392b, #a93226);
+    background: linear-gradient(45deg, #6a40a3, #59358a);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+    box-shadow: 0 8px 20px rgba(123, 81, 181, 0.3);
 }
 
 .btn-secondary {
-    background: #95a5a6;
-    color: white;
+    background: #c9b3d8;
+    color: #2d1b4e;
 }
 
 .btn-secondary:hover {
-    background: #7f8c8d;
+    background: #b59bc4;
     transform: translateY(-2px);
 }
 
@@ -656,11 +620,12 @@ body {
     }
 
     .schedule-item {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .schedule-item .time {
-        justify-self: start;
+    .schedule-right {
+        align-items: flex-start;
+        margin-top: 10px;
     }
 }

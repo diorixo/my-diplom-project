@@ -18,7 +18,7 @@ const fetchTrainerData = async () => {
         document.getElementById('fullName').textContent = `${data.firstName} ${data.lastName}`;
         document.getElementById('trainerId').textContent = data.userId;
         document.getElementById('username').textContent = data.username;
-        document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';;
+        document.getElementById('gender').textContent = data.gender === 'male' ? 'Чоловік' : 'Жінка';
         document.getElementById('email').textContent = data.email;
         document.getElementById('phone').textContent = data.phone;
         document.getElementById('createdAt').textContent = data.created_at;
@@ -79,7 +79,7 @@ const displayTrainerTrainings = (trainings) => {
     const scheduleContainer = document.getElementById('todaySchedule');
     
     if (!trainings || trainings.length === 0) {
-        scheduleContainer.innerHTML = '<p style="color: #7f8c8d; text-align: center; padding: 20px;">Немає активних тренувань</p>';
+        scheduleContainer.innerHTML = '<p style="color: #9c6fd6; text-align: center; padding: 20px;">Немає активних тренувань</p>';
         return;
     }
     
@@ -95,11 +95,11 @@ const displayTrainerTrainings = (trainings) => {
         <span class="category">${training.category}</span>
     </div>
     <div class="schedule-middle">
-        👥 ${training.current_participants}/${training.max_participants}
+        ${training.current_participants}/${training.max_participants}
     </div>
     <div class="schedule-right">
-        <span class="price">💰 ${training.price}₴</span>
-        <span class="duration">⏱ ${training.duration} хв</span>
+        <span class="price">${training.price}₴</span>
+        <span class="duration">${training.duration} хв</span>
     </div>
 `;
 
@@ -126,7 +126,7 @@ const displayTrainerReviews = (reviews) => {
     reviewsContainer.innerHTML = '';
 
     if (!reviews || reviews.length === 0) {
-        reviewsContainer.innerHTML = '<p style="color: #7f8c8d; text-align:center;">Відгуків ще немає</p>';
+        reviewsContainer.innerHTML = '<p style="color: #9c6fd6; text-align:center;">Відгуків ще немає</p>';
         return;
     }
 
@@ -166,11 +166,10 @@ function editProfile() {
     document.getElementById('editGender').value = genderText === 'Чоловік' ? 'male' : 'female';
     
     modal.style.display = 'block';
-    document.body.style.overflow = 'hidden'; // Блокуємо скролл фону
+    document.body.style.overflow = 'hidden';
 }
 
 function viewSchedule() {
-    // Перенаправлення на повний розклад
     window.location.href = '/trainer/manage_trainings';
 }
 
@@ -197,7 +196,7 @@ cancelBtn.onclick = function() {
 function closeModal() {
     modal.style.display = 'none';
     successMessage.style.display = 'none';
-    document.body.style.overflow = 'auto'; // Відновлюємо скролл
+    document.body.style.overflow = 'auto';
 }
 
 // Закриття при кліку поза модальним вікном
@@ -213,7 +212,7 @@ editForm.onsubmit = async function(e) {
         
     const formData = new FormData(editForm);
     const updateData = {
-        firstname: formData.get('firstName'), // відповідно до структури БД
+        firstname: formData.get('firstName'),
         lastname: formData.get('lastName'),
         username: formData.get('username'),
         gender: formData.get('gender'),
@@ -224,7 +223,6 @@ editForm.onsubmit = async function(e) {
     };
 
     try {
-        // Відправка на сервер
         const response = await fetch('/update_trainer', {
             method: 'POST',
             headers: {
@@ -241,7 +239,6 @@ editForm.onsubmit = async function(e) {
             document.getElementById('email').textContent = updateData.email;
             document.getElementById('phone').textContent = updateData.phone;
             document.getElementById('specialization').textContent = updateData.specialization;
-            // document.getElementById('bio').textContent = updateData.bio;
 
             // Оновлюємо фото відповідно до статі
             const trainerImage = document.getElementById('trainerImage');
@@ -282,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // місяці з 0
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}.${month}.${year}`;
 }
