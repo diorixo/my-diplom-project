@@ -42,7 +42,7 @@ body {
     height: 180px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid #7b51b5;
+    border: 5px solid #7c3aed;
     transition: transform 0.3s ease;
     box-shadow: 0 10px 30px rgba(123, 81, 181, 0.25);
 }
@@ -52,7 +52,7 @@ body {
 }
 
 .trainer-info h1 {
-    color: #2d1b4e;
+    color: #1f2937;
     margin-bottom: 10px;
     font-size: 2.5em;
     font-weight: bold;
@@ -66,13 +66,12 @@ body {
 }
 
 .stars {
-    color: #b589d6;
+    color: #7c3aed;
     font-size: 1.5em;
 }
 
 .rating-value {
-    background: #b589d6;
-    color: white;
+    color: #7c3aed;
     padding: 5px 12px;
     border-radius: 15px;
     font-weight: bold;
@@ -113,7 +112,7 @@ body {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #9c6fd6 0%, #8b5fc8 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .stat-card:hover {
@@ -144,7 +143,7 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 8px 25px rgba(123, 81, 181, 0.1);
-    border-left: 5px solid #7b51b5;
+    border-left: 5px solid #7c3aed;
     transition: transform 0.3s ease;
 }
 
@@ -152,20 +151,8 @@ body {
     transform: translateY(-5px);
 }
 
-.professional-card {
-    border-left-color: #9c6fd6;
-}
-
-.schedule-card {
-    border-left-color: #b589d6;
-}
-
-.reviews-card {
-    border-left-color: #8b5fc8;
-}
-
 .info-card h2, .professional-card h2, .schedule-card h2, .reviews-card h2 {
-    color: #2d1b4e;
+    color: #1f2937;
     margin-bottom: 25px;
     font-size: 1.6em;
     font-weight: 600;
@@ -185,12 +172,12 @@ body {
 
 .info-label {
     font-weight: 600;
-    color: #9c6fd6;
+    color: #1f2937;
     flex: 1;
 }
 
 .info-value {
-    color: #2d1b4e;
+    color: #7c3aed;
     font-weight: 500;
     flex: 1;
     text-align: right;
@@ -214,7 +201,7 @@ body {
 }
 
 .schedule-list::-webkit-scrollbar-thumb {
-    background: #b589d6;
+    background: #7c3aed;
     border-radius: 8px;
 }
 
@@ -232,7 +219,7 @@ body {
     box-shadow: 0 4px 15px rgba(123, 81, 181, 0.08);
     margin-bottom: 15px;
     transition: all 0.3s ease;
-    border-left: 4px solid #7b51b5;
+    border-left: 4px solid #7c3aed;
 }
 
 .schedule-item:hover {
@@ -366,13 +353,13 @@ body {
 }
 
 .action-btn {
-    background: linear-gradient(45deg, #9c6fd6, #8b5fc8);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .action-btn:hover {
-    background: linear-gradient(45deg, #8b5fc8, #7a4eb0);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(156, 111, 214, 0.3);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 .action-btn.logout {

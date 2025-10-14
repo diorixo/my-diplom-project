@@ -31,7 +31,7 @@ body {
     align-items: center;
     gap: 30px;
     padding: 40px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: 2px solid #7c3aed;
     border-radius: 15px;
     margin-bottom: 30px;
     box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
@@ -46,7 +46,7 @@ body {
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid rgba(255, 255, 255, 0.3);
+    border: 5px solid #7c3aed;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
     background: white;
@@ -61,7 +61,7 @@ body {
 }
 
 .profile-info h1 {
-    color: white;
+    color: #1f2937;
     margin-bottom: 10px;
     font-size: 2.2em;
     font-weight: bold;
@@ -75,13 +75,13 @@ body {
 }
 
 .profile-info .info-label {
-    color: rgba(255, 255, 255, 0.9);
+    color: #1f2937;
     font-weight: 500;
     margin-right: 8px;
 }
 
 .profile-info .info-value {
-    color: white;
+    color: #1f2937;
     font-weight: 600;
 }
 
@@ -94,7 +94,7 @@ body {
 
 /* Велика бонусна картка */
 .bonus-card-large {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: 2px solid #7c3aed;
     padding: 40px;
     border-radius: 20px;
     margin-bottom: 30px;
@@ -108,33 +108,35 @@ body {
 }
 
 .bonus-content h2 {
-    font-size: 1.4em;
+    color: #1f2937;
+    font-size: 2em;
     margin-bottom: 20px;
     font-weight: 600;
-    opacity: 0.95;
 }
 
 .bonus-amount {
+    color: #7c3aed;
     font-size: 3.5em;
     font-weight: bold;
     margin: 20px 0;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .bonus-description {
+    color: #1f2937;
     font-size: 1.1em;
-    opacity: 0.9;
+    font-weight: 600;
     margin-top: 10px;
 }
 
 .bonus-progress-section {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgb(235, 235, 235);
     padding: 25px;
     border-radius: 15px;
     backdrop-filter: blur(10px);
 }
 
 .progress-label {
+    color: #1f2937;
     display: flex;
     justify-content: space-between;
     margin-bottom: 12px;
@@ -143,20 +145,21 @@ body {
 }
 
 .progress-hint {
+    color: #1f2937;
     margin-top: 12px;
     font-size: 0.9em;
-    opacity: 0.85;
+    font-weight: 600;
     text-align: center;
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     padding: 30px;
     border-radius: 15px;
     text-align: center;
     color: white;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 5px 20px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
 }
 
 .stat-card:hover {
@@ -193,7 +196,7 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 5px 20px rgba(139, 92, 246, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.1);
+    border: 2px solid #7c3aed;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -203,7 +206,7 @@ body {
 }
 
 .info-card h2 {
-    color: #7c3aed;
+    color: #1f2937;
     margin-bottom: 25px;
     font-size: 1.5em;
     font-weight: 700;
