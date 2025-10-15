@@ -18,8 +18,9 @@
             <div class="page-header">
                 <h1>📅 Управління тренуваннями</h1>
                 <div class="header-actions">
-                    <button id="addTrainingBtn" class="btn btn-primary" onclick="openAddTrainingModal()"> Додати групове тренування </button>
-                    <a href="/trainer" class="btn btn-secondary"> Назад до профілю </a>
+                    <button id="addTrainingBtn" class="btn btn-primary" onclick="openAddTrainingModal()">➕ Додати групове тренування</button>
+                    <button id="addPersonalTrainingBtn" class="btn btn-personal" onclick="openAddPersonalTrainingModal()">👤 Додати персональне тренування</button>
+                    <a href="/trainer" class="btn btn-secondary">Назад до профілю</a>
                 </div>
             </div>
 
@@ -60,12 +61,12 @@
             </div>
         </div>
 
-        <!-- Модальне вікно додавання/редагування тренування -->
+        <!-- Модальне вікно додавання/редагування групового тренування -->
         <div id="trainingModal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 id="modalTitle">➕ Додати нове тренування</h2>
-                    <span class="close">&times;</span>
+                    <h2 id="modalTitle">➕ Додати групове тренування</h2>
+                    <span class="close" onclick="closeTrainingModal()">&times;</span>
                 </div>
 
                 <div class="success-message" id="trainingSuccessMessage">
@@ -86,7 +87,6 @@
                             <label for="categoryId">Категорія:</label>
                             <select id="categoryId" name="categoryId" required>
                                 <option value="">Оберіть категорію</option>
-                                <!-- Опції будуть додані динамічно -->
                             </select>
                         </div>
                         <div class="form-group">
@@ -120,13 +120,89 @@
                         </div>
                     </div>
 
-
                     <div class="modal-buttons">
                         <button type="button" class="btn btn-secondary" onclick="closeTrainingModal()">
                             Скасувати
                         </button>
                         <button type="submit" class="btn btn-primary">
                             💾 Зберегти тренування
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Модальне вікно додавання персонального тренування -->
+        <div id="personalTrainingModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>👤 Додати персональне тренування</h2>
+                    <span class="close" onclick="closePersonalTrainingModal()">&times;</span>
+                </div>
+
+                <div class="success-message" id="personalTrainingSuccessMessage">
+                    Персональне тренування успішно збережено!
+                </div>
+
+                <form id="personalTrainingForm">
+                    <div class="form-group">
+                        <label for="personalTrainingName">Назва тренування:</label>
+                        <input type="text" id="personalTrainingName" name="name" required 
+                               placeholder="Наприклад: Індивідуальна тренування">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="personalCategoryId">Категорія:</label>
+                            <select id="personalCategoryId" name="categoryId" required>
+                                <option value="">Оберіть категорію</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="personalDuration">Тривалість (хв):</label>
+                            <input type="number" id="personalDuration" name="duration" required 
+                                   min="15" max="180" placeholder="60">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="personalTrainingDate">Дата:</label>
+                            <input type="date" id="personalTrainingDate" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="personalTrainingTime">Час:</label>
+                            <input type="time" id="personalTrainingTime" name="time" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="personalPrice">Ціна (₴):</label>
+                        <input type="number" id="personalPrice" name="price" required 
+                               min="0" max="5000" placeholder="300">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userSearch">Пошук учасників:</label>
+                        <div class="user-search-container">
+                            <input type="text" id="userSearch" placeholder="Почніть вводити ім'я, прізвище або email..." autocomplete="off">
+                            <div id="userSearchResults" class="user-search-results"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Обрані учасники:</label>
+                        <div id="selectedParticipantsList" class="selected-participants-list">
+                            <p class="empty-participants">Жодного учасника не обрано</p>
+                        </div>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closePersonalTrainingModal()">
+                            Скасувати
+                        </button>
+                        <button type="submit" class="btn btn-personal">
+                            💾 Зберегти персональне тренування
                         </button>
                     </div>
                 </form>

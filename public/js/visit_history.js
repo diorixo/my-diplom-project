@@ -67,6 +67,7 @@ async function loadVisitHistory() {
         }
 
         const data = await response.json();
+        console.log('Отримані дані історії відвідувань:', data);
         
         // Обробляємо дані та конвертуємо дати
         visitHistory = data.map(item => {
@@ -89,10 +90,9 @@ async function loadVisitHistory() {
                 bookingDate: new Date(item.bookingDate),
                 completedAt: item.completedAt ? new Date(item.completedAt) : null,
                 status: item.attendance || item.status || 'pending',
-                trainingName: item.name || (item.visitType === 'free_visit' ? 'Самостійне тренування' : 'Персональне тренування'),
+                trainingName: item.trainingName || (item.visitType === 'free_visit' ? 'Самостійне тренування' : null),
                 trainerName: item.trainerName || 'Без тренера',
-                categoryName: item.category || (item.visitType === 'free_visit' ? 'Самостійне тренування' : null),
-                categoryId: item.category_id,
+                categoryName: item.categoryName || (item.visitType === 'free_visit' ? 'Самостійне тренування' : null),
                 duration: item.duration || '60 хв',
                 price: item.price || 0
             };

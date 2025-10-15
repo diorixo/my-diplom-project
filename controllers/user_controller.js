@@ -119,3 +119,19 @@ exports.updateUser = async (req, res) => {
         });
     }
 };
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const user_id = req.user.userId;
+
+        const query = 'SELECT id, firstname, lastname, email, phone FROM users WHERE role = \'user\' ORDER BY firstname, lastname';
+
+        const result = await db.pool.query(query);
+
+        return res.status(200).json({ users: result.rows });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Помилка завантаження користувачів' });
+    }
+};

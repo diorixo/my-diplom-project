@@ -682,3 +682,123 @@ body {
     border-left: 4px solid #28a745;
     display: none;
 }
+
+/* Кнопка персоналки */
+.btn-personal {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+    color: white;
+}
+
+.btn-personal:hover {
+    background: linear-gradient(45deg, #8e44ad, #7d3c98);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+}
+
+/* Відозна для персоналок */
+.training-card.personal {
+    border-left-color: #9b59b6;
+    background: linear-gradient(135deg, rgba(155, 89, 182, 0.02), rgba(155, 89, 182, 0.05));
+}
+
+.training-card.personal:hover {
+    border-left-color: #8e44ad;
+}
+
+/* Бейджі */
+.badge-personal {
+    background: #e8daef;
+    color: #6c3483;
+}
+
+.badge-group {
+    background: #d4edda;
+    color: #155724;
+}
+
+.training-status {
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Список учасників для вибору */
+.participants-select {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.participant-checkbox {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.participant-checkbox:hover {
+    background: #e8f4f8;
+}
+
+.participant-checkbox input {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #9b59b6;
+}
+
+.participant-info-inline {
+    flex: 1;
+}
+
+.participant-name {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 3px;
+}
+
+.participant-email {
+    font-size: 0.85em;
+    color: #7f8c8d;
+}
+
+/* Модальне вікно персоналки */
+#personalTrainingModal .modal-header h2 {
+    color: #9b59b6;
+}
+
+/* Прогрес-бар для персоналок */
+.training-card.personal .progress-fill {
+    background: linear-gradient(90deg, #9b59b6, #b371d9);
+}
+
+.training-card.personal .progress-fill.full {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+/* Адаптивність для мобільних */
+@media (max-width: 768px) {
+    .participants-select {
+        max-height: 250px;
+    }
+
+    .participant-checkbox {
+        padding: 10px;
+    }
+
+    .training-actions {
+        flex-direction: column;
+    }
+
+    .action-btn-small {
+        width: 100%;
+        justify-content: center;
+    }
+}

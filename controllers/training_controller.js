@@ -1,8 +1,8 @@
 const db = require('../services/db');
 
-exports.addTraining = async (req, res) => {
+exports.createTraining = async (req, res) => {
 	try {
-    const { category_id, name, date, time, duration, price, max_participants } = req.body;
+    const { category_id, name, date, time, duration, price, max_participants, visible = true } = req.body;
     const userId = req.user.userId;
 
     // Отримуємо ID тренера
@@ -13,11 +13,11 @@ exports.addTraining = async (req, res) => {
     }
     const trainerId = trainerResult.rows[0].id;
 
-    const query = 'INSERT INTO trainings (trainer_id, category_id, name, date, time, duration, price, max_participants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;';
-    const values = [trainerId, category_id, name, date, time, duration, price, max_participants];
+    const query = 'INSERT INTO trainings (trainer_id, category_id, name, date, time, duration, price, max_participants, visible) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;';
+    const values = [trainerId, category_id, name, date, time, duration, price, max_participants, visible];
     const { rows } = await db.pool.query(query, values);
 
-    res.status(201).json(rows[0].id);
+    res.status(201).json({ id: rows[0].id });
   	} catch (err) {
 		console.error(err);
     	res.status(500).json({ error: "Помилка при створенні тренування" });
@@ -67,7 +67,6 @@ exports.deleteTraining = async (req, res) => {
         });
     }
 };
-
 
 exports.updateTraining = async (req, res) => {
     try {
@@ -175,7 +174,20 @@ exports.getAllTrainers = async (req, res) => {
 
 exports.getActiveTrainings = async (req, res) => {
 	try {
-		const query = 'SELECT id, trainer_id, category_id, name, date, time, duration, price, max_participants, current_participants, status FROM trainings WHERE status = \'active\';';
+		const query = `
+			SELECT 
+				id,
+				trainer_id,
+				category_id,
+				name, 
+				date, 
+				time, 
+				duration, 
+				price, 
+				max_participants, 
+				current_participants, 
+				status 
+			FROM trainings WHERE status = \'active\' AND visible = true;`;
 		const { rows } = await db.pool.query(query);
 		// if (rows.length === 0) {
 		// 	return res.status(404).json({ error: 'Trainings not found' });

@@ -289,3 +289,29 @@ exports.updateRateTraining = async (req, res) => {
         return res.status(500).json({ success: false, error: 'Помилка при оновлені відгука' });
     }
 }
+
+exports.addBookingPersonal = async (req, res) => {
+    try {
+        const { user_id, training_id } = req.body;
+
+        await db.pool.query('BEGIN');
+
+        const query = 'INSERT INTO bookings (user_id, training_id, visit_type) VALUES ($1, $2, $3) RETURNING id;';
+        const values = [user_id, training_id, 'personal'];
+        await db.pool.query(query, values);
+
+        const updateTrainingQuery = 'UPDATE trainings SET current_participants = current_participants + 1 WHERE id = $1;';
+        await db.pool.query(updateTrainingQuery, [training_id]);
+
+        await db.pool.query('COMMIT');
+ 
+        res.status(201).json({ success: true, message: 'Запис створено' });
+    } catch (err) {
+        await db.pool.query('ROLLBACK');
+        console.error(err);
+        return res.status(500).json({ 
+            success: false,
+            message: 'Помилка при створенні бронювання'
+        });
+    }
+}

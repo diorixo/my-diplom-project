@@ -1,6 +1,8 @@
 let currentTab = 'active';
 let trainings = [];
 let categories = [];
+let allUsers = [];
+let selectedParticipantsMap = new Map(); // Map<userId, {id, firstname, lastname, email}>
 let currentEditingId = null;
 let currentParticipants = [];
 let currentTrainingId = null;
@@ -9,10 +11,14 @@ let currentTrainingId = null;
 document.addEventListener('DOMContentLoaded', function() {
     loadCategories();
     loadTrainings();
+    loadUsers();
     setupModals();
+    setupUserSearch();
 
     // Обмеження для дати (від сьогодні до +30 днів)
     const trainingDateInput = document.getElementById('trainingDate');
+    const personalTrainingDateInput = document.getElementById('personalTrainingDate');
+    
     if (trainingDateInput) {
         const today = new Date();
         const nextMonth = new Date();
@@ -23,7 +29,117 @@ document.addEventListener('DOMContentLoaded', function() {
         trainingDateInput.min = toISODate(today);
         trainingDateInput.max = toISODate(nextMonth);
     }
+
+    if (personalTrainingDateInput) {
+        const today = new Date();
+        const nextMonth = new Date();
+        nextMonth.setMonth(today.getMonth() + 1);
+
+        const toISODate = (date) => date.toISOString().split('T')[0];
+
+        personalTrainingDateInput.min = toISODate(today);
+        personalTrainingDateInput.max = toISODate(nextMonth);
+    }
 });
+
+// ===== КОРИСТУВАЧІ ДЛЯ ПЕРСОНАЛОК =====
+// Завантажити всіх користувачів з роллю 'user'
+async function loadUsers() {
+    try {
+        const response = await fetch('/get_all_users');
+        const data = await response.json();
+        allUsers = data.users || [];
+    } catch (error) {
+        console.error('Error loading users:', error);
+    }
+}
+
+// Пошук користувачів
+function setupUserSearch() {
+    const searchInput = document.getElementById('userSearch');
+    const searchResults = document.getElementById('userSearchResults');
+    
+    if (!searchInput) return;
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        
+        if (query.length < 2) {
+            searchResults.classList.remove('active');
+            searchResults.innerHTML = '';
+            return;
+        }
+        
+        const filtered = allUsers.filter(user => {
+            // Перевіряємо, чи не доданий вже
+            if (selectedParticipantsMap.has(user.id)) return false;
+            
+            const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+            const email = user.email.toLowerCase();
+            return fullName.includes(query) || email.includes(query);
+        });
+        
+        if (filtered.length === 0) {
+            searchResults.innerHTML = '<div class="no-results">Користувачів не знайдено</div>';
+            searchResults.classList.add('active');
+            return;
+        }
+        
+        searchResults.innerHTML = filtered.map(user => `
+            <div class="user-search-item" onclick="addParticipant(${user.id})">
+                <div class="user-search-name">${user.firstname} ${user.lastname}</div>
+                <div class="user-search-email">${user.email}</div>
+            </div>
+        `).join('');
+        
+        searchResults.classList.add('active');
+    });
+    
+    // Закрити результати при кліку поза
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.remove('active');
+        }
+    });
+}
+
+// Додати учасника
+function addParticipant(userId) {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user || selectedParticipantsMap.has(userId)) return;
+    
+    selectedParticipantsMap.set(userId, user);
+    updateSelectedParticipantsList();
+    
+    // Очистити пошук
+    document.getElementById('userSearch').value = '';
+    document.getElementById('userSearchResults').classList.remove('active');
+}
+
+// Видалити учасника
+function removeParticipant(userId) {
+    selectedParticipantsMap.delete(userId);
+    updateSelectedParticipantsList();
+}
+
+// Оновити відображення обраних учасників
+function updateSelectedParticipantsList() {
+    const container = document.getElementById('selectedParticipantsList');
+    
+    if (selectedParticipantsMap.size === 0) {
+        container.innerHTML = '<p class="empty-participants">Жодного учасника не обрано</p>';
+        return;
+    }
+    
+    container.innerHTML = Array.from(selectedParticipantsMap.values()).map(user => `
+        <div class="selected-participant-tag">
+            <span class="selected-participant-name">${user.firstname} ${user.lastname}</span>
+            <button type="button" class="remove-participant-btn" onclick="removeParticipant(${user.id})" title="Видалити">×</button>
+        </div>
+    `).join('');
+}
+
+// ===== КАТЕГОРІЇ =====
 
 // Завантаження категорій для форми
 async function loadCategories() {
@@ -33,19 +149,25 @@ async function loadCategories() {
         categories = data.rows;
         
         const categorySelect = document.getElementById('categoryId');
-        categorySelect.innerHTML = '<option value="">Оберіть категорію</option>';
+        const personalCategorySelect = document.getElementById('personalCategoryId');
         
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.category;
-            categorySelect.appendChild(option);
-        });
+        const optionsHTML = '<option value="">Оберіть категорію</option>' + 
+            categories.map(category => `<option value="${category.id}">${category.category}</option>`).join('');
+        
+        if (categorySelect) {
+            categorySelect.innerHTML = optionsHTML;
+        }
+        
+        if (personalCategorySelect) {
+            personalCategorySelect.innerHTML = optionsHTML;
+        }
         
     } catch (error) {
         console.error('Error loading categories:', error);
     }
 }
+
+// ===== ЗАВАНТАЖЕННЯ ТРЕНУВАНЬ =====
 
 // Завантаження всіх тренувань
 async function loadTrainings() {
@@ -64,6 +186,8 @@ async function loadTrainings() {
         
         const data = await response.json();
         trainings = data.trainings;
+
+        console.log('Loaded trainings:', trainings);
         
         displayTrainings();
         
@@ -118,19 +242,22 @@ function displayTrainings() {
 // Створення картки тренування
 function createTrainingCard(training) {
     const card = document.createElement('div');
-    card.className = `training-card ${training.status === 'completed' ? 'completed' : ''}`;
+    const isPersonal = training.visible === false;
+    card.className = `training-card ${isPersonal ? 'personal' : ''} ${training.status === 'completed' ? 'completed' : ''}`;
     
     const occupancyRate = training.max_participants > 0 
         ? (training.current_participants / training.max_participants) * 100 
         : 0;
     
     const categoryName = categories.find(c => c.id === training.category_id)?.category || 'Не вказано';
+    const badgeText = isPersonal ? '👤 Персональне' : '👥 Групове';
+    const badgeClass = isPersonal ? 'badge-personal' : 'badge-group';
     
     card.innerHTML = `
         <div class="training-header">
             <h3 class="training-name">${training.name}</h3>
-            <span class="training-status ${training.status === 'active' ? 'status-active' : 'status-completed'}">
-                ${training.status === 'active' ? 'Активне' : 'Завершено'}
+            <span class="training-status ${badgeClass}">
+                ${badgeText}
             </span>
         </div>
         
@@ -154,7 +281,6 @@ function createTrainingCard(training) {
                 <span class="info-value">${training.price}₴</span>
             </div>
         </div>
-        
         
         <div class="participants-bar">
             <div class="participants-label">Учасники:</div>
@@ -185,6 +311,7 @@ function createTrainingCard(training) {
     return card;
 }
 
+// ===== ПЕРЕМИКАННЯ ВКЛАДОК =====
 
 // Перемикання вкладок
 function switchTab(tab) {
@@ -199,17 +326,19 @@ function switchTab(tab) {
     document.getElementById('completedTrainings').style.display = tab === 'completed' ? 'block' : 'none';
 }
 
-// Відкриття модального вікна додавання тренування
+// ===== ГРУПОВІ ТРЕНУВАННЯ =====
+
+// Відкриття модального вікна додавання групового тренування
 function openAddTrainingModal() {
     currentEditingId = null;
-    document.getElementById('modalTitle').textContent = '➕ Додати нове тренування';
+    document.getElementById('modalTitle').textContent = '➕ Додати групове тренування';
     document.getElementById('trainingForm').reset();
     document.getElementById('trainingId').value = '';
     document.getElementById('trainingModal').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
 
-// Редагування тренування
+// Редагування групового тренування
 function editTraining(trainingId) {
     const training = trainings.find(t => t.id === trainingId);
     if (!training) return;
@@ -231,7 +360,7 @@ function editTraining(trainingId) {
     document.body.style.overflow = 'hidden';
 }
 
-// Закриття модального вікна тренування
+// Закриття модального вікна групового тренування
 function closeTrainingModal() {
     document.getElementById('trainingModal').style.display = 'none';
     document.getElementById('trainingSuccessMessage').style.display = 'none';
@@ -239,7 +368,7 @@ function closeTrainingModal() {
     currentEditingId = null;
 }
 
-// Обробка форми тренування
+// Обробка форми групового тренування
 document.getElementById('trainingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -252,7 +381,8 @@ document.getElementById('trainingForm').addEventListener('submit', async functio
         price: parseInt(formData.get('price')),
         max_participants: parseInt(formData.get('maxParticipants')),
         date: formData.get('date'),
-        time: formData.get('time')
+        time: formData.get('time'),
+        visible: true
     };
 
     try {
@@ -283,7 +413,7 @@ document.getElementById('trainingForm').addEventListener('submit', async functio
             
             setTimeout(() => {
                 closeTrainingModal();
-                loadTrainings(); // Перезавантажуємо список
+                loadTrainings();
             }, 1500);
         } else {
             throw new Error('Помилка збереження тренування');
@@ -294,6 +424,95 @@ document.getElementById('trainingForm').addEventListener('submit', async functio
         alert('Помилка при збереженні тренування. Спробуйте ще раз.');
     }
 });
+
+// ===== ПЕРСОНАЛЬНІ ТРЕНУВАННЯ =====
+
+// Відкриття модального вікна додавання персонального тренування
+function openAddPersonalTrainingModal() {
+    selectedParticipantsMap.clear();
+    document.getElementById('personalTrainingForm').reset();
+    updateSelectedParticipantsList();
+    
+    document.getElementById('personalTrainingModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Закриття модального вікна персонального тренування
+function closePersonalTrainingModal() {
+    document.getElementById('personalTrainingModal').style.display = 'none';
+    document.getElementById('personalTrainingSuccessMessage').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    selectedParticipantsMap.clear();
+}
+
+// Обробка форми персонального тренування
+document.getElementById('personalTrainingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (selectedParticipantsMap.size === 0) {
+        alert('Будь ласка, оберіть хоча б одного учасника');
+        return;
+    }
+    
+    const formData = new FormData(this);
+    const trainingData = {
+        name: formData.get('name'),
+        category_id: formData.get('categoryId'),
+        duration: parseInt(formData.get('duration')),
+        price: parseInt(formData.get('price')),
+        date: formData.get('date'),
+        time: formData.get('time'),
+        max_participants: selectedParticipantsMap.size,
+        visible: false
+    };
+
+    try {
+        // 1. Спочатку створюємо тренування
+        const response = await fetch('/trainer/create_training', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(trainingData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Помилка створення тренування');
+        }
+        
+        const result = await response.json();
+        const trainingId = result.id;
+        
+        // 2. Потім додаємо учасників через bookings
+        const selectedIds = Array.from(selectedParticipantsMap.keys());
+        for (const userId of selectedIds) {
+            await fetch('/add_booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    user_id: userId, 
+                    training_id: trainingId 
+                })
+            });
+        }
+        
+        const successMessage = document.getElementById('personalTrainingSuccessMessage');
+        successMessage.style.display = 'block';
+        
+        setTimeout(() => {
+            closePersonalTrainingModal();
+            loadTrainings();
+        }, 1500);
+        
+    } catch (error) {
+        console.error('Error saving personal training:', error);
+        alert('Помилка при збереженні персонального тренування. Спробуйте ще раз.');
+    }
+});
+
+// ===== ЗАВЕРШЕННЯ ТРЕНУВАННЯ =====
 
 // Завершення тренування
 async function completeTraining(trainingId) {
@@ -322,9 +541,11 @@ async function completeTraining(trainingId) {
     }
 }
 
-// Видалення тренування
+// ===== ВИДАЛЕННЯ ТРЕНУВАННЯ =====
+
 let trainingToDelete = null;
 
+// Видалення тренування
 function deleteTraining(trainingId) {
     const training = trainings.find(t => t.id === trainingId);
     if (!training) return;
@@ -366,6 +587,8 @@ function closeDeleteModal() {
     document.body.style.overflow = 'auto';
     trainingToDelete = null;
 }
+
+// ===== УЧАСНИКИ =====
 
 // Перегляд учасників
 async function viewParticipants(trainingId) {
@@ -458,7 +681,7 @@ function displayParticipants() {
 // Встановлення статусу відвідуваності
 function setAttendance(participantIndex, status) {
     currentParticipants[participantIndex].attendance = status;
-    displayParticipants(); // Оновлюємо відображення
+    displayParticipants();
 }
 
 // Збереження відвідуваності
@@ -500,6 +723,8 @@ function closeParticipantsModal() {
     currentParticipants = [];
 }
 
+// ===== МОДАЛЬНІ ВІКНА =====
+
 // Налаштування модальних вікон
 function setupModals() {
     // Закриття модальних вікон при кліку на хрестик
@@ -508,7 +733,7 @@ function setupModals() {
             this.closest('.modal').style.display = 'none';
             document.body.style.overflow = 'auto';
             
-            // Приховання повідомлень про успіх
+            // Приховування повідомлень про успіх
             document.querySelectorAll('.success-message').forEach(msg => {
                 msg.style.display = 'none';
             });
@@ -521,7 +746,7 @@ function setupModals() {
             event.target.style.display = 'none';
             document.body.style.overflow = 'auto';
             
-            // Приховання повідомлень про успіх
+            // Приховування повідомлень про успіх
             document.querySelectorAll('.success-message').forEach(msg => {
                 msg.style.display = 'none';
             });
@@ -529,7 +754,8 @@ function setupModals() {
     });
 }
 
-// Утилітарні функції
+// ===== УТИЛІТАРНІ ФУНКЦІЇ =====
+
 const TrainingUtils = {
     // Форматування дати
     formatDate: (dateString) => {
@@ -543,7 +769,7 @@ const TrainingUtils = {
     formatDateForInput: (dateString) => {
         const date = new Date(dateString);
         const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0'); // місяці з 0
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
         const dd = String(date.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`;
     },
@@ -568,8 +794,3 @@ const TrainingUtils = {
         return colors[status] || '#95a5a6';
     }
 };
-
-// Експорт для використання в інших модулях (якщо потрібно)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { TrainingUtils };
-}

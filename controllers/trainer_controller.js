@@ -184,6 +184,7 @@ exports.getTrainerTrainings = async (req, res) => {
                 tr.max_participants,
                 tr.current_participants,
                 tr.status,
+                tr.visible,
                 tr.category_id,
                 c.category
             FROM trainings tr
@@ -206,7 +207,6 @@ exports.getTrainerTrainings = async (req, res) => {
     }
 }
 
-// Наприклад у trainer_controller.js
 exports.getTrainerReviews = async (req, res) => {
   try {
     const userId = req.user.userId;
