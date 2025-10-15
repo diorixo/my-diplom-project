@@ -135,6 +135,7 @@ CREATE TABLE trainings (
 	max_participants INTEGER NOT NULL,
 	current_participants INTEGER default 0,
 	status VARCHAR(50) DEFAULT 'active',
+	visible BOOLEAN DEFAULT true,
 	created_at TIMESTAMP DEFAULT now() NOT NULL,
 	updated_at TIMESTAMP DEFAULT now() NOT NULL,
 
