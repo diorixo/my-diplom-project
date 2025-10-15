@@ -417,7 +417,7 @@ function createHistoryItem(visit) {
     if (visit.price > 0) {
         infoBlocks += `
             <div class="info-item">
-                <span>💰</span>
+                <span>👛</span>
                 <span>${visit.price} грн</span>
             </div>
         `;

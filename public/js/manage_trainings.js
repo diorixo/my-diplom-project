@@ -250,7 +250,7 @@ function createTrainingCard(training) {
         : 0;
     
     const categoryName = categories.find(c => c.id === training.category_id)?.category || 'Не вказано';
-    const badgeText = isPersonal ? '👤 Персональне' : '👥 Групове';
+    const badgeText = isPersonal ? 'Персональне' : 'Групове';
     const badgeClass = isPersonal ? 'badge-personal' : 'badge-group';
     
     card.innerHTML = `
@@ -331,7 +331,7 @@ function switchTab(tab) {
 // Відкриття модального вікна додавання групового тренування
 function openAddTrainingModal() {
     currentEditingId = null;
-    document.getElementById('modalTitle').textContent = '➕ Додати групове тренування';
+    document.getElementById('modalTitle').textContent = 'Додати групове тренування';
     document.getElementById('trainingForm').reset();
     document.getElementById('trainingId').value = '';
     document.getElementById('trainingModal').style.display = 'block';
@@ -654,7 +654,7 @@ function displayParticipants() {
                 <div class="participant-name">${participant.firstname} ${participant.lastname}</div>
                 <div class="participant-details">
                     📧 ${participant.email} | 📞 ${participant.phone}<br>
-                    📅 Записався: ${new Date(participant.created_at).toLocaleDateString('uk-UA')}
+                    Записався: ${new Date(participant.created_at).toLocaleDateString('uk-UA')}
                     ${participant.notes ? `<br>💬 ${participant.notes}` : ''}
                 </div>
             </div>
