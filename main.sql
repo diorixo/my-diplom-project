@@ -146,40 +146,6 @@ CREATE TABLE trainings (
 	CONSTRAINT max_participants_check CHECK (max_participants >= 1)
 );
 
--- Функція для підтримки лічильника current_participants
-CREATE OR REPLACE FUNCTION update_training_participants()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Коли додається новий запис
-    IF TG_OP = 'INSERT' THEN
-        UPDATE trainings
-        SET current_participants = current_participants + 1
-        WHERE id = NEW.training_id;
-        RETURN NEW;
-    END IF;
-
-    -- Коли видаляється запис
-    IF TG_OP = 'DELETE' THEN
-        UPDATE trainings
-        SET current_participants = current_participants - 1
-        WHERE id = OLD.training_id;
-        RETURN OLD;
-    END IF;
-
-    -- Коли оновлюється attendance
-    IF TG_OP = 'UPDATE' THEN
-        -- Якщо новий статус = cancelled, а старий не був cancelled → віднімаємо 1
-        IF NEW.attendance = 'cancelled' AND OLD.attendance <> 'cancelled' THEN
-            UPDATE trainings
-            SET current_participants = current_participants - 1
-            WHERE id = NEW.training_id;
-
-        END IF;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
 -- Тригер для таблиці trainings
 CREATE TRIGGER set_trainings_updated_at
 BEFORE UPDATE ON trainings
@@ -187,15 +153,6 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 select * from trainings order by id;
-UPDATE trainings SET 
-			category_id = 1,
-			name = 'New',
-			date = '2025-10-10',
-			time = '10:00:00',
-			duration = 33,
-			price = 22,
-			max_participants = 3
-		WHERE id = 10 AND trainer_id = 1 RETURNING *;
 -------------------------------------------------------------------------------
 
 -- Таблиця записів на тренування --
@@ -203,29 +160,24 @@ DROP TABLE IF EXISTS bookings CASCADE;
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    training_id INTEGER NOT NULL,
+    training_id INTEGER, -- може бути NULL
+    visit_type VARCHAR(50) DEFAULT 'group', -- group | free_visit | personal
     notes VARCHAR(255),
-	attendance VARCHAR(50) DEFAULT 'pending',
-	created_at TIMESTAMP DEFAULT now() NOT NULL,
-	updated_at TIMESTAMP DEFAULT now() NOT NULL,
+    attendance VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP DEFAULT now() NOT NULL,
 
-    
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE
+    FOREIGN KEY (training_id) REFERENCES trainings(id) ON DELETE CASCADE
 );
-
--- Тригер для таблиці bookings
-DROP TRIGGER IF EXISTS bookings_update_trainings ON bookings;
-CREATE TRIGGER bookings_update_trainings
-AFTER INSERT OR DELETE OR UPDATE ON bookings
-FOR EACH ROW
-EXECUTE FUNCTION update_training_participants();
 
 -- Тригер для таблиці bookings
 CREATE TRIGGER set_bookings_updated_at
 BEFORE UPDATE ON bookings
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
+
+INSERT INTO bookings (user_id, visit_type, notes, attendance) VALUES (1, 'free_visit', 'Самостійне тренування в залі', 'attended');
 
 select * from bookings order by id;
 ------------------------------------------------------
