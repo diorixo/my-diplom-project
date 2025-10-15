@@ -59,13 +59,6 @@ app.get('/bonus_shop', authFunctions.authenticateToken, (req, res) => {
     res.render('bonus_shop')
 })
 
-//не використвується
-// app.get('/user_data', authFunctions.authenticateToken, (req, res) => {
-//     const userId = req.user.userId;
-//     const userRole = req.user.userRole;
-//     res.json({ userId: userId, userRole: userRole, logged: true });
-// })
-
 app.get('/is_logged', authFunctions.isUserLoggedIn, (req, res) => {
     if (req.user) {
       res.json({ user_id: req.user.userId, user_role: req.user.userRole, logged: true });

@@ -10,7 +10,7 @@ let selectedTraining = null;
 let selectedRating = 0;
 let trainers = [];
 let categories = [];
-let isEditingRating = false; // Нова змінна для відстеження режиму редагування
+let isEditingRating = false;
 
 // Ініціалізація при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
@@ -33,7 +33,6 @@ async function loadHistoryData() {
         document.getElementById('loadingHistory').style.display = 'block';
         document.getElementById('historyContent').style.display = 'none';
 
-        // Паралельно завантажуємо всі дані
         await Promise.all([
             loadVisitHistory(),
             loadTrainers(),
@@ -70,21 +69,39 @@ async function loadVisitHistory() {
         const data = await response.json();
         
         // Обробляємо дані та конвертуємо дати
-        visitHistory = data.map(item => ({
-            ...item,
-            date: new Date(item.date),
-            time: item.time.slice(0,5), // Форматуємо час у вигляді 13:25 (без секунд)
-            bookingDate: new Date(item.bookingDate),
-            completedAt: item.completedAt ? new Date(item.completedAt) : null
-        }));
+        visitHistory = data.map(item => {
+            // Визначаємо дату та час
+            let date, time;
+            if (item.visitType === 'free_visit' && (!item.date || item.date === null)) {
+                // Для самостійних тренувань без вказаної дати використовуємо bookingDate
+                const bookingDateTime = new Date(item.bookingDate);
+                date = bookingDateTime;
+                time = bookingDateTime.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                date = item.date ? new Date(item.date) : new Date(item.bookingDate);
+                time = item.time || new Date(item.bookingDate).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            return {
+                ...item,
+                date: date,
+                time: time.slice(0, 5),
+                bookingDate: new Date(item.bookingDate),
+                completedAt: item.completedAt ? new Date(item.completedAt) : null,
+                status: item.attendance || item.status || 'pending',
+                trainingName: item.name || (item.visitType === 'free_visit' ? 'Самостійне тренування' : 'Персональне тренування'),
+                trainerName: item.trainerName || 'Без тренера',
+                categoryName: item.category || (item.visitType === 'free_visit' ? 'Самостійне тренування' : null),
+                categoryId: item.category_id,
+                duration: item.duration || '60 хв',
+                price: item.price || 0
+            };
+        });
 
         filteredHistory = [...visitHistory];
 
     } catch (error) {
         console.error('Помилка завантаження історії:', error);
-        // Якщо API недоступно, використовуємо тестові дані
-        visitHistory = generateSampleHistory();
-        filteredHistory = [...visitHistory];
     }
 }
 
@@ -116,53 +133,6 @@ async function loadCategories() {
     }
 }
 
-// Генерація тестових даних
-function generateSampleHistory() {
-    const sampleData = [];
-    const statuses = ['attended', 'not_attended', 'cancelled'];
-    const sampleCategories = [
-        { id: 1, category: 'Силові тренування' },
-        { id: 2, category: 'Кардіо' },
-        { id: 3, category: 'Йога та розтяжка' },
-        { id: 4, category: 'Групові заняття' },
-        { id: 5, category: 'Функціональний тренінг' }
-    ];
-    const trainingTypes = ['Тренажерний зал', 'Біг', 'Хатха-йога', 'Зумба', 'Кросфіт', 'Бокс', 'Пілатес'];
-    const trainerNames = ['Олександр Петренко', 'Марія Іваненко', 'Андрій Коваль', 'Катерина Мельник'];
-
-    categories.push(...sampleCategories); // Додаємо тестові категорії
-
-    for (let i = 0; i < 25; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - Math.floor(Math.random() * 90)); // Останні 3 місяці
-        
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const trainingType = trainingTypes[Math.floor(Math.random() * trainingTypes.length)];
-        const trainer = trainerNames[Math.floor(Math.random() * trainerNames.length)];
-        const duration = [45, 60, 75, 90][Math.floor(Math.random() * 4)];
-        const categoryData = sampleCategories[Math.floor(Math.random() * sampleCategories.length)];
-
-        sampleData.push({
-            id: i + 1,
-            trainingName: trainingType,
-            trainerName: trainer,
-            date: date,
-            time: `${8 + Math.floor(Math.random() * 12)}:00`,
-            duration: `${duration} хв`,
-            status: status,
-            price: 150 + Math.floor(Math.random() * 100),
-            rating: status === 'attended' ? (Math.random() > 0.3 ? Math.floor(Math.random() * 5) + 1 : null) : null,
-            review: status === 'attended' && Math.random() > 0.7 ? 'Чудове тренування!' : null,
-            bookingDate: new Date(date.getTime() - 24 * 60 * 60 * 1000), // день до тренування
-            completedAt: status === 'attended' ? date : null,
-            categoryId: categoryData.id,
-            categoryName: categoryData.category
-        });
-    }
-
-    return sampleData.sort((a, b) => b.date - a.date);
-}
-
 // Розрахунок статистики
 function calculateStatistics() {
     const stats = {
@@ -176,25 +146,21 @@ function calculateStatistics() {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
 
-    // Підрахунок загальної статистики
     visitHistory.forEach(visit => {
         if (visit.status === 'attended') {
             stats.totalVisits++;
             
-            // Витягуємо години з duration
             const durationMatch = visit.duration.match(/(\d+)/);
             if (durationMatch) {
                 stats.totalHours += parseInt(durationMatch[1]);
             }
 
-            // Поточний місяць
             if (visit.date.getMonth() === currentMonth && visit.date.getFullYear() === currentYear) {
                 stats.currentMonth++;
             }
         }
     });
 
-    // Підрахунок streak (днів поспіль) - спрощена версія
     const completedDates = visitHistory
         .filter(v => v.status === 'attended')
         .map(v => v.date.toDateString())
@@ -218,12 +184,10 @@ function calculateStatistics() {
 
     stats.streak = streak;
 
-    // Конвертуємо хвилини в години
     const hours = Math.floor(stats.totalHours / 60);
     const minutes = stats.totalHours % 60;
     stats.totalHours = hours > 0 ? `${hours}г ${minutes}хв` : `${minutes}хв`;
 
-    // Оновлюємо UI
     document.getElementById('totalVisits').textContent = stats.totalVisits;
     document.getElementById('totalHours').textContent = stats.totalHours;
     document.getElementById('currentMonth').textContent = stats.currentMonth;
@@ -232,10 +196,13 @@ function calculateStatistics() {
 
 // Заповнення фільтрів
 function populateFilters() {
-    // Заповнюємо фільтр категорій
     const categoryFilter = document.getElementById('categoryHistoryFilter');
     
     categoryFilter.innerHTML = '<option value="">Всі категорії</option>';
+    
+    // Додаємо опцію для самостійних тренувань
+    categoryFilter.innerHTML += '<option value="free_visit">Самостійні тренування</option>';
+    
     categories.forEach(category => {
         const option = document.createElement('option');
         option.value = category.id;
@@ -243,11 +210,17 @@ function populateFilters() {
         categoryFilter.appendChild(option);
     });
 
-    // Заповнюємо фільтр тренерів
     const trainerFilter = document.getElementById('trainerHistoryFilter');
-    const uniqueTrainers = [...new Set(visitHistory.map(v => v.trainerName))];
     
     trainerFilter.innerHTML = '<option value="">Всі тренери</option>';
+    trainerFilter.innerHTML += '<option value="free_visit">Без тренера (самостійно)</option>';
+    
+    const uniqueTrainers = [...new Set(
+        visitHistory
+            .filter(v => v.visitType !== 'free_visit')
+            .map(v => v.trainerName)
+    )];
+    
     uniqueTrainers.forEach(trainer => {
         const option = document.createElement('option');
         option.value = trainer;
@@ -264,22 +237,28 @@ function applyHistoryFilters() {
     const statusFilter = document.getElementById('statusFilter').value;
 
     filteredHistory = visitHistory.filter(visit => {
-        // Фільтр по періоду
         if (!matchesPeriodFilter(visit, periodFilter)) {
             return false;
         }
 
-        // Фільтр по категорії
-        if (categoryFilter && visit.categoryId != categoryFilter) {
-            return false;
+        // Фільтр по категорії (з підтримкою самостійних тренувань)
+        if (categoryFilter) {
+            if (categoryFilter === 'free_visit') {
+                if (visit.visitType !== 'free_visit') return false;
+            } else if (visit.categoryId != categoryFilter) {
+                return false;
+            }
         }
 
-        // Фільтр по тренеру
-        if (trainerFilter && visit.trainerName !== trainerFilter) {
-            return false;
+        // Фільтр по тренеру (з підтримкою самостійних тренувань)
+        if (trainerFilter) {
+            if (trainerFilter === 'free_visit') {
+                if (visit.visitType !== 'free_visit') return false;
+            } else if (visit.trainerName !== trainerFilter) {
+                return false;
+            }
         }
 
-        // Фільтр по статусу
         if (statusFilter && visit.status !== statusFilter) {
             return false;
         }
@@ -314,7 +293,7 @@ function matchesPeriodFilter(visit, period) {
         case 'current-year':
             return visitDate.getFullYear() === now.getFullYear();
         
-        default: // 'all'
+        default:
             return true;
     }
 }
@@ -344,7 +323,6 @@ function displayHistoryList() {
         return;
     }
 
-    // Пагінація
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const pageItems = filteredHistory.slice(startIndex, endIndex);
@@ -357,6 +335,19 @@ function displayHistoryList() {
     });
 }
 
+// Отримання іконки типу відвідування
+function getVisitTypeIcon(visitType) {
+    switch (visitType) {
+        case 'free_visit':
+            return '🏃';
+        case 'personal':
+            return '👤';
+        case 'group':
+        default:
+            return '👥';
+    }
+}
+
 // Створення елементу історії
 function createHistoryItem(visit) {
     const item = document.createElement('div');
@@ -364,30 +355,100 @@ function createHistoryItem(visit) {
 
     const statusText = getStatusText(visit.status);
     const statusClass = `status-${visit.status}`;
+    const visitTypeIcon = getVisitTypeIcon(visit.visitType);
 
-    // Визначаємо, які кнопки показувати
     let actionButtons = `
         <button class="action-btn btn-details" onclick="showTrainingDetails(${visit.id})">
             📝 Деталі
         </button>
     `;
 
-    if (visit.status === 'attended') {
+    // Показуємо кнопки оцінки тільки для тренувань з тренером (не для free_visit)
+    if (visit.status === 'attended' && visit.visitType !== 'free_visit') {
         if (!visit.rating) {
-            // Якщо немає оцінки - показуємо кнопку "Оцінити"
             actionButtons += `
                 <button class="action-btn btn-rate" onclick="openRatingModal(${visit.id})">
                     ⭐ Оцінити
                 </button>
             `;
         } else {
-            // Якщо є оцінка - показуємо кнопку "Редагувати відгук"
             actionButtons += `
                 <button class="action-btn btn-edit" onclick="editRating(${visit.id})">
                     ✏️ Редагувати відгук
                 </button>
             `;
         }
+    }
+
+    // Формуємо інформаційні блоки залежно від типу відвідування
+    let infoBlocks = `
+        <div class="info-item">
+            <span>${visitTypeIcon}</span>
+            <span>Тип: ${visit.visitType === 'free_visit' ? 'Самостійне' : visit.visitType === 'personal' ? 'Персональне' : 'Групове'}</span>
+        </div>
+        <div class="info-item">
+            <span>📂</span>
+            <span>Категорія: ${visit.categoryName || 'Не вказана'}</span>
+        </div>
+    `;
+
+    // Показуємо тренера тільки якщо це не самостійне тренування
+    if (visit.visitType !== 'free_visit') {
+        infoBlocks += `
+            <div class="info-item">
+                <span>🧑</span>
+                <span>Тренер: ${visit.trainerName}</span>
+            </div>
+        `;
+    }
+
+    infoBlocks += `
+        <div class="info-item">
+            <span>📅</span>
+            <span>${visit.date.toLocaleDateString('uk-UA')} о ${visit.time}</span>
+        </div>
+        <div class="info-item">
+            <span>⏱️</span>
+            <span>${visit.duration}</span>
+        </div>
+    `;
+
+    // Показуємо ціну тільки якщо вона є
+    if (visit.price > 0) {
+        infoBlocks += `
+            <div class="info-item">
+                <span>💰</span>
+                <span>${visit.price} грн</span>
+            </div>
+        `;
+    }
+
+    // Додаємо нотатки для самостійних тренувань
+    if (visit.notes && visit.visitType === 'free_visit') {
+        infoBlocks += `
+            <div class="info-item">
+                <span>📝</span>
+                <span>Нотатки: ${visit.notes}</span>
+            </div>
+        `;
+    }
+
+    if (visit.rating) {
+        infoBlocks += `
+            <div class="info-item">
+                <span>⭐</span>
+                <span>${'★'.repeat(visit.rating)}${'☆'.repeat(5 - visit.rating)} (${visit.rating}/5)</span>
+            </div>
+        `;
+    }
+
+    if (visit.review) {
+        infoBlocks += `
+            <div class="info-item review-item">
+                <span>💬</span>
+                <span class="review-text">${visit.review}</span>
+            </div>
+        `;
     }
 
     item.innerHTML = `
@@ -397,38 +458,7 @@ function createHistoryItem(visit) {
         </div>
         
         <div class="history-info">
-            <div class="info-item">
-                <span>📂</span>
-                <span>Категорія: ${visit.categoryName || 'Не вказана'}</span>
-            </div>
-            <div class="info-item">
-                <span>🧑</span>
-                <span>Тренер: ${visit.trainerName}</span>
-            </div>
-            <div class="info-item">
-                <span>📅</span>
-                <span>${visit.date.toLocaleDateString('uk-UA')} о ${visit.time}</span>
-            </div>
-            <div class="info-item">
-                <span>⏱️</span>
-                <span>${visit.duration}</span>
-            </div>
-            <div class="info-item">
-                <span>💰</span>
-                <span>${visit.price} грн</span>
-            </div>
-            ${visit.rating ? `
-            <div class="info-item">
-                <span>⭐</span>
-                <span>${'★'.repeat(visit.rating)}${'☆'.repeat(5 - visit.rating)} (${visit.rating}/5)</span>
-            </div>
-            ` : ''}
-            ${visit.review ? `
-            <div class="info-item review-item">
-                <span>💬</span>
-                <span class="review-text">${visit.review}</span>
-            </div>
-            ` : ''}
+            ${infoBlocks}
         </div>
 
         <div class="history-actions">
@@ -459,13 +489,11 @@ function getStatusText(status) {
 function setHistoryView(view) {
     currentHistoryView = view;
     
-    // Оновлюємо активну кнопку
     document.querySelectorAll('.view-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
     
-    // Показуємо/приховуємо відповідні елементи
     const historyList = document.getElementById('historyList');
     const calendarView = document.getElementById('calendarView');
     const pagination = document.getElementById('pagination');
@@ -508,10 +536,8 @@ function changeMonth(delta) {
 function generateCalendar() {
     const calendarGrid = document.getElementById('calendarGrid');
     
-    // Очищуємо календар
     calendarGrid.innerHTML = '';
     
-    // Заголовки днів тижня
     const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
     daysOfWeek.forEach(day => {
         const header = document.createElement('div');
@@ -520,14 +546,11 @@ function generateCalendar() {
         calendarGrid.appendChild(header);
     });
     
-    // Отримуємо перший та останній день місяця
     const firstDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth(), 1);
     const lastDay = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth() + 1, 0);
     
-    // Початковий день тижня (понеділок = 0)
     const startDay = (firstDay.getDay() + 6) % 7;
     
-    // Додаємо дні з попереднього місяця
     for (let i = startDay - 1; i >= 0; i--) {
         const day = new Date(firstDay);
         day.setDate(day.getDate() - i - 1);
@@ -535,16 +558,14 @@ function generateCalendar() {
         calendarGrid.appendChild(dayElement);
     }
     
-    // Додаємо дні поточного місяця
     for (let day = 1; day <= lastDay.getDate(); day++) {
         const date = new Date(currentCalendarMonth.getFullYear(), currentCalendarMonth.getMonth(), day);
         const dayElement = createCalendarDay(date, false);
         calendarGrid.appendChild(dayElement);
     }
     
-    // Заповнюємо решту місць
     const totalCells = calendarGrid.children.length;
-    const remainingCells = 42 - totalCells; // 6 рядків × 7 днів
+    const remainingCells = 42 - totalCells;
     
     for (let i = 1; i <= remainingCells; i++) {
         const day = new Date(lastDay);
@@ -563,13 +584,11 @@ function createCalendarDay(date, isOtherMonth) {
         day.classList.add('other-month');
     }
     
-    // Перевіряємо чи це сьогодні
     const today = new Date();
     if (date.toDateString() === today.toDateString()) {
         day.classList.add('today');
     }
     
-    // Знаходимо тренування на цей день
     const dayTrainings = filteredHistory.filter(visit => 
         visit.date.toDateString() === date.toDateString()
     );
@@ -577,14 +596,15 @@ function createCalendarDay(date, isOtherMonth) {
     day.innerHTML = `
         <div class="day-number">${date.getDate()}</div>
         <div class="day-trainings">
-            ${dayTrainings.map((training, index) => 
-                `<div class="day-training ${training.status}" 
+            ${dayTrainings.map((training, index) => {
+                const icon = getVisitTypeIcon(training.visitType);
+                return `<div class="day-training ${training.status}" 
                       onclick="showTrainingDetails(${training.id})"
                       title="${training.trainingName} - ${training.time} (${training.categoryName || 'Без категорії'})">
-                    <div class="training-short-name">${training.trainingName.substring(0, 10)}${training.trainingName.length > 10 ? '...' : ''}</div>
+                    <div class="training-short-name">${icon} ${training.trainingName.substring(0, 8)}${training.trainingName.length > 8 ? '...' : ''}</div>
                     <div class="training-time">${training.time}</div>
-                </div>`
-            ).join('')}
+                </div>`;
+            }).join('')}
         </div>
     `;
     
@@ -629,21 +649,33 @@ function showTrainingDetails(visitId) {
 
     selectedTraining = visit;
     
-    const detailsHtml = `
+    let detailsHtml = `
         <div class="detail-section">
             <h3>Інформація про тренування</h3>
             <div class="detail-row">
-                <span class="detail-label">Тип тренування:</span>
+                <span class="detail-label">Тип відвідування:</span>
+                <span class="detail-value">${getVisitTypeIcon(visit.visitType)} ${visit.visitType === 'free_visit' ? 'Самостійне тренування' : visit.visitType === 'personal' ? 'Персональне тренування' : 'Групове тренування'}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Назва:</span>
                 <span class="detail-value">${visit.trainingName}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Категорія:</span>
                 <span class="detail-value">${visit.categoryName || 'Не вказана'}</span>
             </div>
+    `;
+
+    if (visit.visitType !== 'free_visit') {
+        detailsHtml += `
             <div class="detail-row">
                 <span class="detail-label">Тренер:</span>
                 <span class="detail-value">${visit.trainerName}</span>
             </div>
+        `;
+    }
+
+    detailsHtml += `
             <div class="detail-row">
                 <span class="detail-label">Дата та час:</span>
                 <span class="detail-value">${visit.date.toLocaleDateString('uk-UA')} о ${visit.time}</span>
@@ -652,17 +684,36 @@ function showTrainingDetails(visitId) {
                 <span class="detail-label">Тривалість:</span>
                 <span class="detail-value">${visit.duration}</span>
             </div>
+    `;
+
+    if (visit.price > 0) {
+        detailsHtml += `
             <div class="detail-row">
                 <span class="detail-label">Вартість:</span>
                 <span class="detail-value">${visit.price} грн</span>
             </div>
+        `;
+    }
+
+    if (visit.notes && visit.visitType === 'free_visit') {
+        detailsHtml += `
+            <div class="detail-row">
+                <span class="detail-label">Нотатки:</span>
+                <span class="detail-value">${visit.notes}</span>
+            </div>
+        `;
+    }
+
+    detailsHtml += `
             <div class="detail-row">
                 <span class="detail-label">Статус:</span>
                 <span class="detail-value">${getStatusText(visit.status)}</span>
             </div>
         </div>
-        
-        ${visit.rating ? `
+    `;
+
+    if (visit.rating && visit.visitType !== 'free_visit') {
+        detailsHtml += `
         <div class="detail-section">
             <h3>Ваша оцінка</h3>
             <div class="detail-row">
@@ -681,8 +732,10 @@ function showTrainingDetails(visitId) {
                 </button>
             </div>
         </div>
-        ` : ''}
-        
+        `;
+    }
+
+    detailsHtml += `
         <div class="detail-section">
             <h3>Додаткова інформація</h3>
             <div class="detail-row">
@@ -713,22 +766,25 @@ function openRatingModal(visitId) {
     const visit = visitHistory.find(v => v.id === visitId);
     if (!visit) return;
 
+    // Заборона оцінки самостійних тренувань
+    if (visit.visitType === 'free_visit') {
+        alert('Самостійні тренування не можна оцінювати');
+        return;
+    }
+
     selectedTraining = visit;
     selectedRating = 0;
     isEditingRating = false;
     
-    // Очищуємо форму
     document.getElementById('ratingTrainingName').textContent = visit.trainingName;
     document.getElementById('reviewText').value = '';
     document.getElementById('ratingText').textContent = 'Оберіть оцінку';
     
-    // Скидаємо зірки
     document.querySelectorAll('.star').forEach(star => {
         star.classList.remove('active');
     });
 
-    // Змінюємо заголовок та кнопку
-    document.querySelector('#ratingModal .modal-header h2').textContent = '⭐ Оцініти тренування';
+    document.querySelector('#ratingModal .modal-header h2').textContent = '⭐ Оцінити тренування';
     document.querySelector('#ratingForm button[type="submit"]').textContent = 'Залишити оцінку';
     
     document.getElementById('ratingModal').style.display = 'block';
@@ -739,18 +795,21 @@ function editRating(visitId) {
     const visit = visitHistory.find(v => v.id === visitId);
     if (!visit || !visit.rating) return;
 
+    // Заборона редагування оцінки самостійних тренувань
+    if (visit.visitType === 'free_visit') {
+        alert('Самостійні тренування не можна оцінювати');
+        return;
+    }
+
     selectedTraining = visit;
     selectedRating = visit.rating;
     isEditingRating = true;
     
-    // Заповнюємо форму існуючими даними
     document.getElementById('ratingTrainingName').textContent = visit.trainingName;
     document.getElementById('reviewText').value = visit.review || '';
     
-    // Встановлюємо зірки
     updateStarRating();
     
-    // Змінюємо заголовок та кнопку для режиму редагування
     document.querySelector('#ratingModal .modal-header h2').textContent = '✏️ Редагувати відгук';
     document.querySelector('#ratingForm button[type="submit"]').textContent = 'Зберегти зміни';
     
@@ -767,7 +826,6 @@ function closeRatingModal() {
 
 // Налаштування обробників подій
 function setupEventListeners() {
-    // Обробка кліків по зірках
     document.querySelectorAll('.star').forEach(star => {
         star.addEventListener('click', function() {
             selectedRating = parseInt(this.getAttribute('data-rating'));
@@ -775,7 +833,6 @@ function setupEventListeners() {
         });
     });
 
-    // Обробка форми оцінки
     document.getElementById('ratingForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -787,7 +844,6 @@ function setupEventListeners() {
         const review = document.getElementById('reviewText').value.trim();
         
         try {
-            // Змінюємо URL залежно від режиму
             const url = isEditingRating ? 
                 '/user/visit_history/update_rating' : 
                 '/user/visit_history/rate_training';
@@ -805,18 +861,15 @@ function setupEventListeners() {
             });
             
             if (response.ok) {
-                // Оновлюємо локальні дані
                 selectedTraining.rating = selectedRating;
                 selectedTraining.review = review;
                 
-                // Також оновлюємо в основному масиві
                 const visitIndex = visitHistory.findIndex(v => v.id === selectedTraining.id);
                 if (visitIndex !== -1) {
                     visitHistory[visitIndex].rating = selectedRating;
                     visitHistory[visitIndex].review = review;
                 }
                 
-                // Оновлюємо відображення
                 displayHistory();
                 closeRatingModal();
                 
@@ -838,7 +891,6 @@ function setupEventListeners() {
         }
     });
 
-    // Закриття модальних вікон при кліку поза ними
     window.addEventListener('click', function(event) {
         const detailModal = document.getElementById('detailModal');
         const ratingModal = document.getElementById('ratingModal');
