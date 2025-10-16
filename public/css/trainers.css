@@ -1,0 +1,304 @@
+/* Глобальні стилі */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+}
+
+/* Контейнер сторінки */
+.trainers-container {
+    min-height: calc(100vh - 200px);
+}
+
+/* Герой секція */
+.trainers-hero {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    padding: 60px 20px;
+    text-align: center;
+    color: white;
+    margin-bottom: 50px;
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    font-weight: 300;
+}
+
+/* Основна секція тренерів */
+.trainers-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+}
+
+/* Фільтри */
+.filters-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.search-box,
+.filter-select {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-box:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.filter-select {
+    min-width: 200px;
+    cursor: pointer;
+}
+
+/* Сітка тренерів */
+.trainers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Карточка тренера */
+.trainer-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.trainer-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+}
+
+.trainer-avatar {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem;
+    color: white;
+    overflow: hidden;
+}
+
+.trainer-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.trainer-avatar-initial {
+    font-size: 3.5rem;
+    color: white;
+}
+
+.trainer-info {
+    padding: 25px;
+}
+
+.trainer-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.trainer-specialization {
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+}
+
+.trainer-bio {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.trainer-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    color: #ffc107;
+    font-size: 1.1rem;
+}
+
+.rating-text {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.trainer-stats {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.stat {
+    text-align: center;
+    flex: 1;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 3px;
+}
+
+.trainer-action {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.trainer-action:hover {
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+/* Повідомлення про відсутність результатів */
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-results p {
+    font-size: 1.1rem;
+    color: #999;
+}
+
+/* Еффект підсвічування */
+.trainer-card.highlight {
+    animation: highlightPulse 0.6s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(124, 58, 237, 0);
+    }
+    100% {
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+    }
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+
+    .hero-content p {
+        font-size: 1rem;
+    }
+
+    .filters-container {
+        flex-direction: column;
+    }
+
+    .search-box,
+    .filter-select {
+        width: 100%;
+    }
+
+    .trainers-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .trainer-avatar {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .trainers-hero {
+        padding: 40px 15px;
+    }
+
+    .hero-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .trainers-section {
+        padding: 0 15px 40px;
+    }
+
+    .trainer-name {
+        font-size: 1.2rem;
+    }
+}

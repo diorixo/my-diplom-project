@@ -161,10 +161,30 @@ const loadTrainers = async () => {
                 trainerSelect.appendChild(option);
             });
         }
+
+        checkSelectedTrainer();
     } catch (error) {
         console.error('Помилка завантаження тренерів:', error);
     }
 }
+
+// Перевірка та встановлення тренера з sessionStorage з файлу trainers.js
+const checkSelectedTrainer = () => {
+    const selectedTrainerId = sessionStorage.getItem('selectedTrainerId');
+    if (selectedTrainerId) {
+        const trainerFilter = document.getElementById('trainerFilter');
+        trainerFilter.value = selectedTrainerId;
+        
+        // Скроллим до фільтра
+        document.querySelector('.filters-section').scrollIntoView({ behavior: 'smooth' });
+        
+        // Застосовуємо фільтр
+        applyFilters();
+        
+        // Видаляємо значення з sessionStorage
+        sessionStorage.removeItem('selectedTrainerId');
+    }
+};
 
 // Функція перевірки чи тренування вже минуло або розпочалося
 function isTrainingExpired(training) {

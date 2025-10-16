@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наші тренери - Спортивний центр</title>
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/ai_assistant.css">
+    <link rel="stylesheet" href="/css/trainers.css">
+</head>
+<body>
+    <%- include('blocks/header') -%>
+
+    <!-- Основний контент -->
+    <main class="trainers-container">
+        <section class="trainers-hero">
+            <div class="hero-content">
+                <h1>Наші тренери</h1>
+                <p>Професійна команда, яка допоможе тобі досягти своїх цілей</p>
+            </div>
+        </section>
+
+        <section class="trainers-section">
+            <div class="filters-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-box" 
+                    placeholder="Пошук тренера за ім'ям..."
+                >
+            </div>
+
+            <div id="trainers-grid" class="trainers-grid">
+                <!-- Тренери завантажуватимуться сюди -->
+            </div>
+
+            <div id="no-results" class="no-results" style="display: none;">
+                <p>Тренерів не знайдено за вашими критеріями пошуку</p>
+            </div>
+        </section>
+    </main>
+
+    <%- include('blocks/footer') -%>
+    <%- include('blocks/ai_assistant') -%>
+    
+    <script src="/js/trainers.js"></script>
+</body>
+</html>

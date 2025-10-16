@@ -23,6 +23,7 @@ app.use(require('./routes/chat_route'))
 app.use(require('./routes/bonus_shop_route'));
 app.use(require('./routes/analytics_route'));
 app.use(require('./routes/admin_route'));
+app.use(require('./routes/trainers_route'));
 
 app.get('/', (req, res) => {
     res.render('index')
@@ -42,6 +43,10 @@ app.get('/trainer', authFunctions.authenticateToken, (req, res) => {
 
 app.get('/admin', authFunctions.authenticateToken, (req, res) => {
     res.render('admin')
+})
+
+app.get('/trainers', (req, res) => {
+    res.render('trainers')
 })
 
 app.get('/trainer/manage_trainings', authFunctions.authenticateToken, (req, res) => {
