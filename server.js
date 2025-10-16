@@ -20,8 +20,9 @@ app.use(require('./routes/category_route'))
 app.use(require('./routes/trainer_route'))
 app.use(require('./routes/booking_route'))
 app.use(require('./routes/chat_route'))
-app.use(require('./routes/analytics_route'));
 app.use(require('./routes/bonus_shop_route'));
+app.use(require('./routes/analytics_route'));
+app.use(require('./routes/admin_route'));
 
 app.get('/', (req, res) => {
     res.render('index')
@@ -37,6 +38,10 @@ app.get('/user', authFunctions.authenticateToken, (req, res) => {
 
 app.get('/trainer', authFunctions.authenticateToken, (req, res) => {
     res.render('trainer')
+})
+
+app.get('/admin', authFunctions.authenticateToken, (req, res) => {
+    res.render('admin')
 })
 
 app.get('/trainer/manage_trainings', authFunctions.authenticateToken, (req, res) => {
