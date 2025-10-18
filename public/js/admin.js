@@ -7,6 +7,8 @@ class AdminPanel {
         this.currentUserId = null;
         this.currentUserRole = null;
         this.charts = {};
+        this.chatStats = {};
+        this.currentPeriod = 'today';
         this.init();
     }
 
@@ -30,33 +32,28 @@ class AdminPanel {
     }
 
     switchSection(sectionName) {
-        // Update navigation
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
         document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
-        // Update content
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
         document.getElementById(`${sectionName}-section`).classList.add('active');
 
-        // Load data for specific section
         if (sectionName === 'chat-stats') {
-            this.loadChatStatistics();
+            this.loadChatStatistics(this.currentPeriod);
         } else if (sectionName === 'analytics') {
             this.loadAnalytics();
         }
     }
 
     setupEventListeners() {
-        // Search
         document.getElementById('user-search')?.addEventListener('input', (e) => {
             this.filterUsers(e.target.value);
         });
 
-        // Pagination
         document.getElementById('prev-page')?.addEventListener('click', () => {
             if (this.currentPage > 1) {
                 this.currentPage--;
@@ -72,7 +69,6 @@ class AdminPanel {
             }
         });
 
-        // Modal
         document.getElementById('close-modal')?.addEventListener('click', () => {
             this.closeModal();
         });
@@ -85,12 +81,11 @@ class AdminPanel {
             this.changeUserRole();
         });
 
-        // Stats period
         document.getElementById('stats-period')?.addEventListener('change', (e) => {
+            this.currentPeriod = e.target.value;
             this.loadChatStatistics(e.target.value);
         });
 
-        // Export data
         document.getElementById('export-data')?.addEventListener('click', () => {
             this.exportAnalytics();
         });
@@ -242,7 +237,6 @@ class AdminPanel {
                 throw new Error('Failed to update role');
             }
 
-            // Update local data
             const userIndex = this.allUsers.findIndex(u => u.id === this.currentUserId);
             if (userIndex !== -1) {
                 this.allUsers[userIndex].role = newRole;
@@ -272,6 +266,8 @@ class AdminPanel {
             }
 
             const data = await response.json();
+            
+            this.chatStats = data;
             this.updateChatStats(data);
             this.renderActivityChart(data);
             this.renderPopularQuestions(data.popularQuestions || []);
@@ -283,26 +279,16 @@ class AdminPanel {
     }
 
     updateChatStats(data) {
-        const today = data.today || {};
-        const trends = data.trends || {};
+        const todayStats = data.today || {};
 
-        document.getElementById('total-sessions').textContent = today.totalSessions || 0;
-        document.getElementById('total-messages').textContent = today.totalMessages || 0;
-        document.getElementById('avg-satisfaction').textContent = 
-            today.averageSatisfaction ? today.averageSatisfaction.toFixed(1) : '0.0';
-
-        this.updateTrend('sessions-change', trends.sessionsChange);
-        this.updateTrend('messages-change', trends.messagesChange);
-        this.updateTrend('satisfaction-change', trends.satisfactionChange);
-    }
-
-    updateTrend(elementId, value) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        const isPositive = value >= 0;
-        element.textContent = `${isPositive ? '+' : ''}${value}%`;
-        element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
+        document.getElementById('total-sessions').textContent = todayStats.totalSessions || 0;
+        document.getElementById('total-messages').textContent = todayStats.totalMessages || 0;
+        
+        // Показуємо відсоток задоволеності замість середньої оцінки
+        const satisfactionRate = todayStats.satisfactionRate !== null && todayStats.satisfactionRate !== undefined 
+            ? todayStats.satisfactionRate 
+            : 0;
+        document.getElementById('avg-satisfaction').textContent = satisfactionRate + '%';
     }
 
     renderActivityChart(data) {
@@ -324,13 +310,15 @@ class AdminPanel {
                     data: chartData.sessions,
                     borderColor: '#7c3aed',
                     backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                    tension: 0.4
+                    tension: 0.4,
+                    fill: true
                 }, {
                     label: 'Повідомлення',
                     data: chartData.messages,
                     borderColor: '#06b6d4',
                     backgroundColor: 'rgba(6, 182, 212, 0.1)',
-                    tension: 0.4
+                    tension: 0.4,
+                    fill: true
                 }]
             },
             options: {
@@ -351,10 +339,46 @@ class AdminPanel {
     }
 
     prepareChartData(data) {
-        // Mock data - replace with real data from API
-        const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
-        const sessions = [12, 19, 15, 25, 22, 18, 14];
-        const messages = [45, 67, 52, 89, 76, 61, 48];
+        const dailyStats = data.dailyStats || [];
+        
+        if (dailyStats.length === 0) {
+            return {
+                labels: [],
+                sessions: [],
+                messages: []
+            };
+        }
+
+        const now = new Date();
+        // Використовуємо UTC дату замість локальної
+        const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const todayStr = todayUTC.toISOString().split('T')[0];
+
+        console.log('📊 Chart data preparation:');
+        console.log('Today string (UTC):', todayStr);
+
+        const labels = dailyStats.map((item, index) => {
+            // Порівнюємо рядки дат напряму
+            if (item.date === todayStr) {
+                return 'Сьогодні';
+            }
+            
+            // Вчора
+            const yesterdayUTC = new Date(todayUTC);
+            yesterdayUTC.setUTCDate(yesterdayUTC.getUTCDate() - 1);
+            const yesterdayStr = yesterdayUTC.toISOString().split('T')[0];
+            
+            if (item.date === yesterdayStr) {
+                return 'Вчора';
+            }
+            
+            // Інакше показуємо день тижня та дату
+            const date = new Date(item.date + 'T00:00:00Z'); // Додаємо Z для UTC
+            return date.toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+        });
+
+        const sessions = dailyStats.map(item => item.totalSessions || 0);
+        const messages = dailyStats.map(item => item.totalMessages || 0);
 
         return { labels, sessions, messages };
     }
@@ -363,7 +387,7 @@ class AdminPanel {
         const container = document.getElementById('popular-questions');
         if (!container) return;
 
-        if (questions.length === 0) {
+        if (!questions || questions.length === 0) {
             container.innerHTML = '<p class="empty-state">Немає даних про популярні питання</p>';
             return;
         }
@@ -380,15 +404,16 @@ class AdminPanel {
         const container = document.getElementById('recent-feedback');
         if (!container) return;
 
-        if (feedback.length === 0) {
+        if (!feedback || feedback.length === 0) {
             container.innerHTML = '<p class="empty-state">Немає останніх відгуків</p>';
             return;
         }
 
         container.innerHTML = feedback.map(f => `
             <div class="feedback-item">
-                <div class="feedback-rating">
-                    ${this.renderStars(f.rating)}
+                <div class="feedback-rating ${f.isLike ? 'positive' : 'negative'}">
+                    ${f.icon || (f.isLike ? '👍' : '👎')}
+                    <span>${f.isLike ? 'Корисно' : 'Не корисно'}</span>
                 </div>
                 ${f.comment ? `<div class="feedback-comment">${f.comment}</div>` : ''}
                 <div class="feedback-time">${this.formatDate(f.timestamp)}</div>
@@ -396,15 +421,9 @@ class AdminPanel {
         `).join('');
     }
 
-    renderStars(rating) {
-        const stars = Math.round(rating);
-        return '★'.repeat(stars) + '☆'.repeat(5 - stars);
-    }
-
     async loadAnalytics() {
         try {
-            // Load insights
-            const insightsResponse = await fetch('/api/admin/chat-analytics/insights', {
+            const response = await fetch('/api/admin/chat-analytics/insights', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -412,23 +431,29 @@ class AdminPanel {
                 body: JSON.stringify({ period: 7 })
             });
 
-            if (insightsResponse.ok) {
-                const insightsData = await insightsResponse.json();
-                this.renderInsights(insightsData.insights || []);
+            if (response.ok) {
+                const data = await response.json();
+                // Перевіряємо чи insights є масивом
+                const insights = Array.isArray(data.insights) ? data.insights : [];
+                this.renderInsights(insights);
+            } else {
+                console.error('Failed to load insights:', response.status);
+                this.renderInsights([]);
             }
 
-            // Load active sessions
+            // Отримуємо активні сесії з основного дашборду
             const dashboardResponse = await fetch('/api/admin/chat-analytics/dashboard');
             if (dashboardResponse.ok) {
                 const dashboardData = await dashboardResponse.json();
                 document.getElementById('active-sessions-count').textContent = 
-                    dashboardData.activeSessions || 0;
+                    dashboardData.activeSessions?.length || 0;
             }
 
-            // Render source chart
-            this.renderSourceChart();
+            this.renderSourceChart(this.chatStats);
         } catch (error) {
             console.error('Error loading analytics:', error);
+            this.renderInsights([]);
+            this.showError('Помилка завантаження аналітики');
         }
     }
 
@@ -436,23 +461,24 @@ class AdminPanel {
         const container = document.getElementById('insights-list');
         if (!container) return;
 
-        if (insights.length === 0) {
+        // Перевіряємо чи insights є масивом
+        if (!Array.isArray(insights) || insights.length === 0) {
             container.innerHTML = '<p class="empty-state">Немає інсайтів для відображення</p>';
             return;
         }
 
         container.innerHTML = insights.map(insight => `
-            <div class="insight-item ${insight.type}">
+            <div class="insight-item ${insight.type || 'info'}">
                 <div class="insight-content">
                     <h4>${insight.message}</h4>
                     ${insight.action ? `<p class="insight-action">${insight.action}</p>` : ''}
                 </div>
-                <span class="insight-priority ${insight.priority}">${insight.priority}</span>
+                <span class="insight-priority ${insight.priority || 'low'}">${insight.priority || 'normal'}</span>
             </div>
         `).join('');
     }
 
-    renderSourceChart() {
+    renderSourceChart(data) {
         const ctx = document.getElementById('source-chart');
         if (!ctx) return;
 
@@ -460,12 +486,21 @@ class AdminPanel {
             this.charts.source.destroy();
         }
 
+        const dailyStats = data.dailyStats || [];
+        const totalFaq = dailyStats.reduce((sum, day) => 
+            sum + (day.responseSourceDistribution?.faq || 0), 0);
+        const totalAi = dailyStats.reduce((sum, day) => 
+            sum + (day.responseSourceDistribution?.ai || 0), 0);
+
+        const labels = ['FAQ', 'AI'];
+        const chartData = [totalFaq || 0, totalAi || 0];
+
         this.charts.source = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['FAQ', 'AI'],
+                labels: labels,
                 datasets: [{
-                    data: [60, 40],
+                    data: chartData,
                     backgroundColor: ['#10b981', '#7c3aed']
                 }]
             },
@@ -483,7 +518,9 @@ class AdminPanel {
 
     async exportAnalytics() {
         try {
-            const response = await fetch('/api/admin/chat-analytics/export?format=json');
+            const response = await fetch('/api/admin/chat-analytics/export?format=json', {
+                method: 'GET'
+            });
             
             if (!response.ok) {
                 throw new Error('Export failed');
@@ -508,12 +545,12 @@ class AdminPanel {
     }
 
     startAutoRefresh() {
-        // Refresh statistics every 5 minutes
         setInterval(() => {
-            if (document.querySelector('[data-section="chat-stats"]').classList.contains('active')) {
-                this.loadChatStatistics();
-            }
-            if (document.querySelector('[data-section="analytics"]').classList.contains('active')) {
+            const activeSectionName = document.querySelector('.nav-item.active')?.getAttribute('data-section');
+            
+            if (activeSectionName === 'chat-stats') {
+                this.loadChatStatistics(this.currentPeriod);
+            } else if (activeSectionName === 'analytics') {
                 this.loadAnalytics();
             }
         }, 5 * 60 * 1000);
@@ -528,12 +565,11 @@ class AdminPanel {
     }
 
     showNotification(message, type) {
-        // Simple notification - you can enhance this
+        console.log(`[${type.toUpperCase()}] ${message}`);
         alert(message);
     }
 }
 
-// Initialize admin panel when DOM is loaded
 let adminPanel;
 document.addEventListener('DOMContentLoaded', () => {
     adminPanel = new AdminPanel();

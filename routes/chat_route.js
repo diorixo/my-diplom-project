@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../services/db');
 const { searchFAQ, getRandomFAQs } = require('../services/faq');
+const chatAnalytics = require('../services/chat_analytics');
 
 // OpenRouter API конфігурація
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
@@ -58,7 +59,7 @@ async function getContextInfo() {
 // POST /api/chat - обробка чат повідомлень з FAQ
 router.post('/api/chat', async (req, res) => {
     try {
-        const { messages } = req.body;
+        const { messages, conversation_id } = req.body;
         
         if (!messages || !Array.isArray(messages)) {
             return res.status(400).json({ 
@@ -66,14 +67,29 @@ router.post('/api/chat', async (req, res) => {
             });
         }
 
+        // Розпочати нову сесію, якщо це перша сесія
+        if (conversation_id) {
+            await chatAnalytics.startSession(conversation_id, req.headers['user-agent'] || '', req.ip || '');
+        }
+
         // Отримуємо останнє повідомлення користувача
         const userMessage = messages[messages.length - 1];
         if (userMessage && userMessage.role === 'user') {
+            // Логуємо користувальницьке повідомлення
+            if (conversation_id) {
+                await chatAnalytics.logMessage(conversation_id, 'user', userMessage.content);
+            }
+
             // Спочатку шукаємо у FAQ
             const faqResult = searchFAQ(userMessage.content);
             
             if (faqResult.found && faqResult.confidence > 70) {
                 console.log(`📚 FAQ match found with confidence: ${faqResult.confidence}%`);
+                
+                // Логуємо FAQ відповідь
+                if (conversation_id) {
+                    await chatAnalytics.logMessage(conversation_id, 'bot', faqResult.answer, 'faq');
+                }
                 
                 // Відразу повертаємо відповідь з FAQ
                 return res.json({ 
@@ -215,6 +231,11 @@ router.post('/api/chat', async (req, res) => {
 
         const aiMessage = data.choices[0].message.content;
 
+        // Логуємо AI відповідь
+        if (conversation_id) {
+            await chatAnalytics.logMessage(conversation_id, 'bot', aiMessage, 'ai');
+        }
+
         // Логуємо використання токенів
         if (data.usage) {
             console.log('💬 AI Chat request completed:', {
@@ -240,6 +261,33 @@ router.post('/api/chat', async (req, res) => {
 
         res.status(500).json({ 
             error: errorMessage,
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// POST /api/chat/log-message - логування окремого повідомлення
+router.post('/api/chat/log-message', async (req, res) => {
+    try {
+        const { conversationId, messageType, content, responseSource } = req.body;
+        
+        if (!conversationId || !messageType || !content) {
+            return res.status(400).json({ 
+                error: 'conversationId, messageType, and content are required' 
+            });
+        }
+
+        // Логуємо повідомлення
+        await chatAnalytics.logMessage(conversationId, messageType, content, responseSource || null);
+        
+        res.json({ 
+            success: true,
+            message: 'Message logged successfully' 
+        });
+    } catch (error) {
+        console.error('Log message error:', error);
+        res.status(500).json({ 
+            error: 'Failed to log message',
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
@@ -304,18 +352,29 @@ router.get('/api/chat/info', async (req, res) => {
     }
 });
 
-// POST /api/chat/feedback - збір відгуків
+// POST /api/chat/feedback - збір відгуків (like/dislike)
 router.post('/api/chat/feedback', async (req, res) => {
     try {
         const { rating, comment, conversation_id, message_source } = req.body;
         
+        // rating тепер 'positive' або 'negative'
+        const isLike = rating === 'positive' || rating === 'like';
+        
         console.log('📝 Chat feedback received:', { 
-            rating, 
+            rating: isLike ? '👍 Like' : '👎 Dislike',
             comment: comment ? comment.substring(0, 100) + '...' : 'No comment',
             conversation_id,
             source: message_source || 'unknown',
             timestamp: new Date().toISOString()
         });
+        
+        // Логуємо відгук в аналітику
+        if (conversation_id) {
+            await chatAnalytics.logFeedback(conversation_id, isLike, comment, message_source || 'ai');
+            
+            // Завершуємо сесію
+            await chatAnalytics.endSession(conversation_id);
+        }
         
         res.json({ 
             success: true, 

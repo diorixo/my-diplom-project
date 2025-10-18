@@ -207,7 +207,7 @@ body {
 }
 
 .rating-icon {
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
 }
 
@@ -226,20 +226,6 @@ body {
     color: var(--text-secondary);
     font-size: 0.875rem;
     margin-top: 0.25rem;
-}
-
-.stat-change {
-    font-size: 0.875rem;
-    margin-top: 0.5rem;
-    font-weight: 600;
-}
-
-.stat-change.positive {
-    color: var(--success);
-}
-
-.stat-change.negative {
-    color: var(--danger);
 }
 
 /* Table */
@@ -443,38 +429,81 @@ body {
     color: var(--text-secondary);
 }
 
-/* Feedback List */
+/* Feedback List - ОНОВЛЕНО для like/dislike */
 .feedback-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
 .feedback-item {
-    padding: 0.875rem;
+    padding: 1rem;
     background: var(--background);
     border-radius: 8px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.feedback-item:hover {
+    background: #f1f5f9;
+    transform: translateX(2px);
 }
 
 .feedback-rating {
     display: flex;
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
-.feedback-rating .star {
-    color: #f59e0b;
+.feedback-rating.positive {
+    color: #10b981;
+}
+
+.feedback-rating.negative {
+    color: #ef4444;
+}
+
+.feedback-rating span {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.feedback-item:has(.feedback-rating.positive) {
+    border-left-color: #10b981;
+}
+
+.feedback-item:has(.feedback-rating.negative) {
+    border-left-color: #ef4444;
 }
 
 .feedback-comment {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: #64748b;
+    font-size: 14px;
+    margin: 8px 0;
+    font-style: italic;
+    line-height: 1.5;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
 }
 
 .feedback-time {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    margin-top: 0.5rem;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.feedback-time::before {
+    content: "⏱";
+    font-size: 14px;
 }
 
 /* Export Button */
@@ -532,7 +561,7 @@ body {
     border-left-color: var(--warning);
 }
 
-.insight-item.error {
+.insight-item.alert {
     background: #fef2f2;
     border-left-color: var(--danger);
 }

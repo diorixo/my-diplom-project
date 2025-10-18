@@ -1,308 +1,516 @@
+// services/chat_analytics.js
+const db = require('./db');
+
 class ChatAnalytics {
     constructor() {
-        this.sessions = new Map();
-        this.dailyStats = new Map();
-        this.popularQuestions = new Map();
-        this.userFeedback = [];
+        this.sessions = new Map(); // Кеш активних сесій
+        this.initializeCache();
+    }
+
+    // Ініціалізація кешу при старті
+    async initializeCache() {
+        try {
+            // Завантажуємо активні сесії в кеш (тільки ті що реально активні зараз)
+            const result = await db.pool.query(`
+                SELECT * FROM chat_sessions 
+                WHERE status = 'active' 
+                AND last_activity > NOW() - INTERVAL '5 minutes'
+            `);
+            
+            result.rows.forEach(session => {
+                this.sessions.set(session.conversation_id, {
+                    conversationId: session.conversation_id,
+                    startTime: session.start_time,
+                    lastActivity: session.last_activity,
+                    messageCount: session.message_count,
+                    userAgent: session.user_agent,
+                    ipAddress: session.ip_address,
+                    status: session.status
+                });
+            });
+            
+            console.log(`📊 Chat Analytics: Loaded ${this.sessions.size} active sessions`);
+        } catch (error) {
+            console.error('Error initializing cache:', error);
+        }
     }
 
     // Розпочати нову сесію
-    startSession(conversationId, userAgent = '', ipAddress = '') {
-        const session = {
-            id: conversationId,
-            startTime: new Date(),
-            messageCount: 0,
-            userAgent: userAgent,
-            ipAddress: this.hashIP(ipAddress), // Хешуємо IP для приватності
-            responses: {
-                faq: 0,
-                ai: 0
-            },
-            satisfaction: null,
-            topics: new Set()
-        };
-        
-        this.sessions.set(conversationId, session);
-        return session;
+    async startSession(conversationId, userAgent, ipAddress) {
+        try {
+            if (!this.sessions.has(conversationId)) {
+                const session = {
+                    conversationId,
+                    startTime: new Date(),
+                    lastActivity: new Date(),
+                    messageCount: 0,
+                    userAgent,
+                    ipAddress,
+                    status: 'active'
+                };
+                
+                this.sessions.set(conversationId, session);
+                
+                // Зберігаємо в БД
+                await db.pool.query(`
+                    INSERT INTO chat_sessions 
+                    (conversation_id, start_time, last_activity, user_agent, ip_address, status)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                    ON CONFLICT (conversation_id) DO NOTHING
+                `, [conversationId, session.startTime, session.lastActivity, userAgent, ipAddress, 'active']);
+                
+                console.log(`📊 New chat session started: ${conversationId}`);
+            }
+        } catch (error) {
+            console.error('Error starting session:', error);
+        }
     }
 
     // Логування повідомлення
-    logMessage(conversationId, messageType, content, responseSource = 'user') {
-        const session = this.sessions.get(conversationId);
-        if (!session) return;
-
-        session.messageCount++;
-        
-        if (messageType === 'user') {
-            // Аналізуємо тематику повідомлення
-            const topic = this.analyzeMessageTopic(content);
-            if (topic) {
-                session.topics.add(topic);
-            }
+    async logMessage(conversationId, messageType, content, responseSource = null) {
+        try {
+            const timestamp = new Date();
             
-            // Збільшуємо популярність питання
-            const normalizedQuestion = this.normalizeQuestion(content);
-            const count = this.popularQuestions.get(normalizedQuestion) || 0;
-            this.popularQuestions.set(normalizedQuestion, count + 1);
-        }
-        
-        if (messageType === 'bot') {
-            session.responses[responseSource]++;
+            // Зберігаємо в БД
+            await db.pool.query(`
+                INSERT INTO chat_messages 
+                (conversation_id, message_type, content, response_source, timestamp)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [conversationId, messageType, content.substring(0, 500), responseSource, timestamp]);
+
+            // Оновлюємо сесію
+            if (this.sessions.has(conversationId)) {
+                const session = this.sessions.get(conversationId);
+                session.messageCount++;
+                session.lastActivity = timestamp;
+                
+                await db.pool.query(`
+                    UPDATE chat_sessions 
+                    SET message_count = message_count + 1, last_activity = $1
+                    WHERE conversation_id = $2
+                `, [timestamp, conversationId]);
+            }
+        } catch (error) {
+            console.error('Error logging message:', error);
         }
     }
 
     // Логування відгуку
-    logFeedback(conversationId, rating, comment = '', source = 'ai') {
-        const session = this.sessions.get(conversationId);
-        if (session) {
-            session.satisfaction = rating;
+    async logFeedback(conversationId, isLike, comment, messageSource) {
+        try {
+            const timestamp = new Date();
+            
+            await db.pool.query(`
+                INSERT INTO chat_feedback 
+                (conversation_id, is_like, comment, message_source, timestamp)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [conversationId, isLike, comment ? comment.substring(0, 500) : null, messageSource, timestamp]);
+        } catch (error) {
+            console.error('Error logging feedback:', error);
         }
-        
-        this.userFeedback.push({
-            conversationId,
-            rating,
-            comment,
-            source,
-            timestamp: new Date(),
-            topics: session ? Array.from(session.topics) : []
+    }
+
+    // Завершити сесію
+    async endSession(conversationId) {
+        try {
+            if (this.sessions.has(conversationId)) {
+                const session = this.sessions.get(conversationId);
+                const endTime = new Date();
+                const duration = endTime - session.startTime;
+                
+                await db.pool.query(`
+                    UPDATE chat_sessions 
+                    SET status = 'ended', end_time = $1, duration = $2
+                    WHERE conversation_id = $3
+                `, [endTime, duration, conversationId]);
+                
+                this.sessions.delete(conversationId);
+                console.log(`📊 Session ended: ${conversationId} (${session.messageCount} messages)`);
+            }
+        } catch (error) {
+            console.error('Error ending session:', error);
+        }
+    }
+
+    // Отримати активні сесії
+    getActiveSessions() {
+        const now = new Date();
+        const activeTimeout = 5 * 60 * 1000; // 5 хвилин
+
+        return Array.from(this.sessions.values()).filter(session => {
+            return session.status === 'active' && 
+                   (now - session.lastActivity) < activeTimeout;
         });
     }
 
-    // Завершення сесії
-    endSession(conversationId) {
-        const session = this.sessions.get(conversationId);
-        if (!session) return;
+    // Статистика за сьогодні
+    async getTodayStats() {
+        try {
+            const now = new Date();
+            const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
 
-        session.endTime = new Date();
-        session.duration = session.endTime - session.startTime;
-        
-        // Додаємо до денної статистики
-        const today = new Date().toDateString();
-        const dailyStat = this.dailyStats.get(today) || {
+            const [sessionsResult, messagesResult, feedbackResult] = await Promise.all([
+                db.pool.query('SELECT COUNT(*) FROM chat_sessions WHERE start_time >= $1', [todayUTC]),
+                db.pool.query(`
+                    SELECT 
+                        COUNT(*) FILTER (WHERE message_type = 'user') as total,
+                        COUNT(*) FILTER (WHERE message_type = 'bot' AND response_source = 'faq') as faq_count,
+                        COUNT(*) FILTER (WHERE message_type = 'bot' AND response_source = 'ai') as ai_count
+                    FROM chat_messages 
+                    WHERE timestamp >= $1
+                `, [todayUTC]),
+                db.pool.query(`
+                    SELECT 
+                        COUNT(*) FILTER (WHERE is_like = true) as likes,
+                        COUNT(*) FILTER (WHERE is_like = false) as dislikes
+                    FROM chat_feedback 
+                    WHERE timestamp >= $1
+                `, [todayUTC])
+            ]);
+
+            const likes = parseInt(feedbackResult.rows[0].likes) || 0;
+            const dislikes = parseInt(feedbackResult.rows[0].dislikes) || 0;
+            const totalFeedback = likes + dislikes;
+            const satisfactionRate = totalFeedback > 0 ? Math.round((likes / totalFeedback) * 100) : 0;
+
+            return {
+                totalSessions: parseInt(sessionsResult.rows[0].count) || 0,
+                totalMessages: parseInt(messagesResult.rows[0].total) || 0,
+                likes,
+                dislikes,
+                satisfactionRate,
+                responseSourceDistribution: {
+                    faq: parseInt(messagesResult.rows[0].faq_count) || 0,
+                    ai: parseInt(messagesResult.rows[0].ai_count) || 0
+                }
+            };
+        } catch (error) {
+            console.error('Error getting today stats:', error);
+            return this.getEmptyStats();
+        }
+    }
+
+    // Статистика за тиждень
+    async getWeeklyStats() {
+        try {
+            const now = new Date();
+            const weekAgoUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 7, 0, 0, 0, 0));
+
+            const [sessionsResult, messagesResult, feedbackResult] = await Promise.all([
+                db.pool.query('SELECT COUNT(*) FROM chat_sessions WHERE start_time >= $1', [weekAgoUTC]),
+                db.pool.query('SELECT COUNT(*) FROM chat_messages WHERE timestamp >= $1 AND message_type = \'user\'', [weekAgoUTC]),
+                db.pool.query(`
+                    SELECT 
+                        COUNT(*) FILTER (WHERE is_like = true) as likes,
+                        COUNT(*) FILTER (WHERE is_like = false) as dislikes
+                    FROM chat_feedback 
+                    WHERE timestamp >= $1
+                `, [weekAgoUTC])
+            ]);
+
+            const likes = parseInt(feedbackResult.rows[0].likes) || 0;
+            const dislikes = parseInt(feedbackResult.rows[0].dislikes) || 0;
+            const totalFeedback = likes + dislikes;
+            const satisfactionRate = totalFeedback > 0 ? Math.round((likes / totalFeedback) * 100) : 0;
+
+            const dailyStats = await this.getDailyBreakdown(7);
+
+            return {
+                totalSessions: parseInt(sessionsResult.rows[0].count) || 0,
+                totalMessages: parseInt(messagesResult.rows[0].count) || 0,
+                likes,
+                dislikes,
+                satisfactionRate,
+                dailyStats
+            };
+        } catch (error) {
+            console.error('Error getting weekly stats:', error);
+            return this.getEmptyStats();
+        }
+    }
+
+    // Статистика за місяць
+    async getMonthlyStats() {
+        try {
+            const now = new Date();
+            const monthAgoUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 30, 0, 0, 0, 0));
+
+            const [sessionsResult, messagesResult, feedbackResult] = await Promise.all([
+                db.pool.query('SELECT COUNT(*) FROM chat_sessions WHERE start_time >= $1', [monthAgoUTC]),
+                db.pool.query('SELECT COUNT(*) FROM chat_messages WHERE timestamp >= $1 AND message_type = \'user\'', [monthAgoUTC]),
+                db.pool.query(`
+                    SELECT 
+                        COUNT(*) FILTER (WHERE is_like = true) as likes,
+                        COUNT(*) FILTER (WHERE is_like = false) as dislikes
+                    FROM chat_feedback 
+                    WHERE timestamp >= $1
+                `, [monthAgoUTC])
+            ]);
+
+            const likes = parseInt(feedbackResult.rows[0].likes) || 0;
+            const dislikes = parseInt(feedbackResult.rows[0].dislikes) || 0;
+            const totalFeedback = likes + dislikes;
+            const satisfactionRate = totalFeedback > 0 ? Math.round((likes / totalFeedback) * 100) : 0;
+
+            const dailyStats = await this.getDailyBreakdown(30);
+
+            return {
+                totalSessions: parseInt(sessionsResult.rows[0].count) || 0,
+                totalMessages: parseInt(messagesResult.rows[0].count) || 0,
+                likes,
+                dislikes,
+                satisfactionRate,
+                dailyStats
+            };
+        } catch (error) {
+            console.error('Error getting monthly stats:', error);
+            return this.getEmptyStats();
+        }
+    }
+
+    // Розбивка по днях
+    async getDailyBreakdown(days) {
+        try {
+            const result = [];
+            const now = new Date();
+            const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date(todayUTC);
+                date.setUTCDate(date.getUTCDate() - i);
+                
+                const nextDate = new Date(date);
+                nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+
+                const [sessionsResult, messagesResult, feedbackResult] = await Promise.all([
+                    db.pool.query(`
+                        SELECT COUNT(*) FROM chat_sessions 
+                        WHERE start_time >= $1 AND start_time < $2
+                    `, [date, nextDate]),
+                    db.pool.query(`
+                        SELECT 
+                            COUNT(*) FILTER (WHERE message_type = 'user') as total,
+                            COUNT(*) FILTER (WHERE response_source = 'faq') as faq_count,
+                            COUNT(*) FILTER (WHERE response_source = 'ai') as ai_count
+                        FROM chat_messages 
+                        WHERE timestamp >= $1 AND timestamp < $2
+                    `, [date, nextDate]),
+                    db.pool.query(`
+                        SELECT 
+                            COUNT(*) FILTER (WHERE is_like = true) as likes,
+                            COUNT(*) FILTER (WHERE is_like = false) as dislikes
+                        FROM chat_feedback 
+                        WHERE timestamp >= $1 AND timestamp < $2
+                    `, [date, nextDate])
+                ]);
+
+                result.push({
+                    date: date.toISOString().split('T')[0],
+                    totalSessions: parseInt(sessionsResult.rows[0].count) || 0,
+                    totalMessages: parseInt(messagesResult.rows[0].total) || 0,
+                    likes: parseInt(feedbackResult.rows[0].likes) || 0,
+                    dislikes: parseInt(feedbackResult.rows[0].dislikes) || 0,
+                    responseSourceDistribution: {
+                        faq: parseInt(messagesResult.rows[0].faq_count) || 0,
+                        ai: parseInt(messagesResult.rows[0].ai_count) || 0
+                    }
+                });
+            }
+
+            return result;
+        } catch (error) {
+            console.error('Error getting daily breakdown:', error);
+            return [];
+        }
+    }
+
+    // Популярні питання
+    async getPopularQuestions(limit = 5) {
+        try {
+            const result = await db.pool.query(`
+                SELECT 
+                    content as question,
+                    COUNT(*) as count
+                FROM chat_messages
+                WHERE message_type = 'user'
+                AND timestamp >= NOW() - INTERVAL '30 days'
+                GROUP BY content
+                ORDER BY count DESC
+                LIMIT $1
+            `, [limit]);
+
+            return result.rows;
+        } catch (error) {
+            console.error('Error getting popular questions:', error);
+            return [];
+        }
+    }
+
+    // Останні відгуки
+    async getRecentFeedback(limit = 5) {
+        try {
+            const result = await db.pool.query(`
+                SELECT 
+                    is_like as "isLike",
+                    comment,
+                    message_source as source,
+                    timestamp
+                FROM chat_feedback
+                ORDER BY timestamp DESC
+                LIMIT $1
+            `, [limit]);
+
+            return result.rows.map(f => ({
+                isLike: f.isLike,
+                icon: f.isLike ? '👍' : '👎',
+                comment: f.comment,
+                timestamp: f.timestamp,
+                source: f.source
+            }));
+        } catch (error) {
+            console.error('Error getting recent feedback:', error);
+            return [];
+        }
+    }
+
+    // Інсайти та рекомендації
+    async generateInsights(period = 7) {
+        const insights = [];
+        const stats = period === 7 ? await this.getWeeklyStats() : await this.getMonthlyStats();
+        const activeSessions = this.getActiveSessions();
+
+        if (stats.totalSessions < 10) {
+            insights.push({
+                type: 'warning',
+                priority: 'medium',
+                message: 'Низька активність чат-бота',
+                action: 'Розгляньте можливість промо-акцій або покращення видимості віджету'
+            });
+        }
+
+        const dailyStats = stats.dailyStats || [];
+        const totalFaq = dailyStats.reduce((sum, day) => sum + (day.responseSourceDistribution?.faq || 0), 0);
+        const totalAi = dailyStats.reduce((sum, day) => sum + (day.responseSourceDistribution?.ai || 0), 0);
+
+        if (totalAi > totalFaq * 2) {
+            insights.push({
+                type: 'info',
+                priority: 'low',
+                message: 'AI відповідає частіше ніж FAQ',
+                action: 'Можливо, варто розширити базу FAQ популярними питаннями'
+            });
+        }
+
+        if (stats.satisfactionRate < 60) {
+            insights.push({
+                type: 'alert',
+                priority: 'high',
+                message: `Низький рівень задоволеності: ${stats.satisfactionRate}% 👎`,
+                action: 'Перегляньте якість відповідей та оновіть базу знань'
+            });
+        } else if (stats.satisfactionRate >= 80) {
+            insights.push({
+                type: 'success',
+                priority: 'low',
+                message: `Відмінний рівень задоволеності: ${stats.satisfactionRate}% 👍`,
+                action: 'Продовжуйте в тому ж дусі'
+            });
+        }
+
+        if (stats.dislikes > stats.likes) {
+            insights.push({
+                type: 'warning',
+                priority: 'high',
+                message: `Більше негативних відгуків (${stats.dislikes} 👎 vs ${stats.likes} 👍)`,
+                action: 'Терміново перегляньте якість відповідей бота'
+            });
+        }
+
+        if (activeSessions.length > 5) {
+            insights.push({
+                type: 'info',
+                priority: 'medium',
+                message: `${activeSessions.length} активних користувачів зараз онлайн`,
+                action: 'Пікова активність - відмінний час для моніторингу'
+            });
+        }
+
+        return insights;
+    }
+
+    // Експорт даних
+    async exportData() {
+        try {
+            const [sessions, messages, feedback] = await Promise.all([
+                db.pool.query('SELECT * FROM chat_sessions ORDER BY start_time DESC LIMIT 1000'),
+                db.pool.query('SELECT * FROM chat_messages ORDER BY timestamp DESC LIMIT 5000'),
+                db.pool.query('SELECT * FROM chat_feedback ORDER BY timestamp DESC LIMIT 500')
+            ]);
+
+            return {
+                sessions: sessions.rows,
+                messages: messages.rows,
+                feedback: feedback.rows.map(f => ({
+                    ...f,
+                    feedbackType: f.is_like ? 'like' : 'dislike'
+                })),
+                exportDate: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            return { sessions: [], messages: [], feedback: [], exportDate: new Date().toISOString() };
+        }
+    }
+
+    // Дашборд
+    async getDashboard() {
+        try {
+            // Спочатку отримуємо today stats
+            const today = await this.getTodayStats();
+            
+            // Тепер решту даних паралельно
+            const [popularQuestions, recentFeedback, dailyStats] = await Promise.all([
+                this.getPopularQuestions(),
+                this.getRecentFeedback(),
+                this.getDailyBreakdown(7)
+            ]);
+
+            const activeSessions = this.getActiveSessions();
+
+            return {
+                today,
+                popularQuestions,
+                recentFeedback,
+                activeSessions,
+                dailyStats
+            };
+        } catch (error) {
+            console.error('Error building dashboard:', error);
+            return {
+                today: this.getEmptyStats(),
+                popularQuestions: [],
+                recentFeedback: [],
+                activeSessions: [],
+                dailyStats: []
+            };
+        }
+    }
+
+    // Пуста статистика (fallback)
+    getEmptyStats() {
+        return {
             totalSessions: 0,
             totalMessages: 0,
-            averageDuration: 0,
-            satisfactionRatings: [],
-            topicDistribution: new Map(),
-            sourceDistribution: { faq: 0, ai: 0 }
+            likes: 0,
+            dislikes: 0,
+            satisfactionRate: 0,
+            responseSourceDistribution: { faq: 0, ai: 0 },
+            dailyStats: []
         };
-        
-        dailyStat.totalSessions++;
-        dailyStat.totalMessages += session.messageCount;
-        dailyStat.sourceDistribution.faq += session.responses.faq;
-        dailyStat.sourceDistribution.ai += session.responses.ai;
-        
-        if (session.satisfaction) {
-            dailyStat.satisfactionRatings.push(session.satisfaction);
-        }
-        
-        // Додаємо теми
-        session.topics.forEach(topic => {
-            const count = dailyStat.topicDistribution.get(topic) || 0;
-            dailyStat.topicDistribution.set(topic, count + 1);
-        });
-        
-        this.dailyStats.set(today, dailyStat);
-        this.sessions.delete(conversationId);
-    }
-
-    // Аналіз тематики повідомлення
-    analyzeMessageTopic(message) {
-        const lowerMessage = message.toLowerCase();
-        
-        const topics = {
-            'розклад': ['розклад', 'коли', 'час', 'години', 'графік'],
-            'ціни': ['ціна', 'вартість', 'скільки', 'коштує', 'прайс'],
-            'тренери': ['тренер', 'інструктор', 'хто веде'],
-            'запис': ['записатися', 'забронювати', 'реєстрація'],
-            'обладнання': ['тренажер', 'інвентар', 'обладнання'],
-            'здоров\'я': ['травма', 'біль', 'протипоказання', 'лікар'],
-            'початківці': ['початківець', 'новачок', 'вперше', 'не займався'],
-            'контакти': ['телефон', 'адреса', 'де знаходитесь', 'контакт']
-        };
-        
-        for (const [topic, keywords] of Object.entries(topics)) {
-            if (keywords.some(keyword => lowerMessage.includes(keyword))) {
-                return topic;
-            }
-        }
-        
-        return 'інше';
-    }
-
-    // Нормалізація питання для аналітики
-    normalizeQuestion(question) {
-        return question
-            .toLowerCase()
-            .replace(/[?!.,]/g, '')
-            .trim()
-            .substring(0, 50); // Обрізаємо для зручності
-    }
-
-    // Хешування IP для приватності
-    hashIP(ip) {
-        if (!ip) return 'unknown';
-        // Простий хеш для демо (у продакшені використовуйте crypto.createHash)
-        return ip.split('').reduce((a, b) => {
-            a = ((a << 5) - a) + b.charCodeAt(0);
-            return a & a;
-        }, 0).toString(16);
-    }
-
-    // Отримання статистики за день
-    getDayStats(date = new Date().toDateString()) {
-        const stats = this.dailyStats.get(date);
-        if (!stats) return null;
-
-        // Розрахункові метрики
-        const avgDuration = stats.totalMessages > 0 
-            ? Math.round(stats.totalSessions * 60000 / stats.totalMessages) // мс в хвилини
-            : 0;
-            
-        const avgSatisfaction = stats.satisfactionRatings.length > 0
-            ? stats.satisfactionRatings.reduce((a, b) => a + b, 0) / stats.satisfactionRatings.length
-            : null;
-
-        const topTopics = Array.from(stats.topicDistribution.entries())
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, 5);
-
-        return {
-            date,
-            totalSessions: stats.totalSessions,
-            totalMessages: stats.totalMessages,
-            averageMessagesPerSession: Math.round(stats.totalMessages / stats.totalSessions),
-            averageDuration: avgDuration,
-            averageSatisfaction: avgSatisfaction ? Math.round(avgSatisfaction * 100) / 100 : null,
-            responseSourceDistribution: stats.sourceDistribution,
-            topTopics: topTopics.map(([topic, count]) => ({ topic, count })),
-            satisfactionDistribution: this.calculateSatisfactionDistribution(stats.satisfactionRatings)
-        };
-    }
-
-    // Розрахунок розподілу задоволення
-    calculateSatisfactionDistribution(ratings) {
-        if (ratings.length === 0) return null;
-        
-        const distribution = { positive: 0, neutral: 0, negative: 0 };
-        
-        ratings.forEach(rating => {
-            if (rating >= 4) distribution.positive++;
-            else if (rating >= 3) distribution.neutral++;
-            else distribution.negative++;
-        });
-        
-        return {
-            positive: Math.round(distribution.positive / ratings.length * 100),
-            neutral: Math.round(distribution.neutral / ratings.length * 100),
-            negative: Math.round(distribution.negative / ratings.length * 100)
-        };
-    }
-
-    // Топ популярних питань
-    getPopularQuestions(limit = 10) {
-        return Array.from(this.popularQuestions.entries())
-            .sort(([,a], [,b]) => b - a)
-            .slice(0, limit)
-            .map(([question, count]) => ({ question, count }));
-    }
-
-    // Отримання активних сесій
-    getActiveSessions() {
-        return Array.from(this.sessions.values()).map(session => ({
-            id: session.id,
-            startTime: session.startTime,
-            messageCount: session.messageCount,
-            topics: Array.from(session.topics),
-            duration: new Date() - session.startTime
-        }));
-    }
-
-    // Отримання недавніх відгуків
-    getRecentFeedback(limit = 20) {
-        return this.userFeedback
-            .slice(-limit)
-            .reverse()
-            .map(feedback => ({
-                rating: feedback.rating,
-                comment: feedback.comment,
-                source: feedback.source,
-                topics: feedback.topics,
-                timestamp: feedback.timestamp
-            }));
-    }
-
-    // Експорт статистики для адмінпанелі
-    exportStats(startDate, endDate) {
-        const start = new Date(startDate).toDateString();
-        const end = new Date(endDate).toDateString();
-        
-        const stats = [];
-        let currentDate = new Date(startDate);
-        
-        while (currentDate.toDateString() <= end) {
-            const dayStats = this.getDayStats(currentDate.toDateString());
-            if (dayStats) {
-                stats.push(dayStats);
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        
-        return {
-            period: { start, end },
-            dailyStats: stats,
-            popularQuestions: this.getPopularQuestions(20),
-            recentFeedback: this.getRecentFeedback(50),
-            summary: {
-                totalSessions: stats.reduce((sum, day) => sum + day.totalSessions, 0),
-                totalMessages: stats.reduce((sum, day) => sum + day.totalMessages, 0),
-                averageSatisfaction: this.calculateOverallSatisfaction(stats)
-            }
-        };
-    }
-
-    calculateOverallSatisfaction(dailyStats) {
-        const allRatings = dailyStats
-            .filter(day => day.averageSatisfaction !== null)
-            .map(day => day.averageSatisfaction);
-            
-        if (allRatings.length === 0) return null;
-        
-        return Math.round(
-            allRatings.reduce((sum, rating) => sum + rating, 0) / allRatings.length * 100
-        ) / 100;
-    }
-
-    // Очищення старих даних (запускати щоденно)
-    cleanOldData(daysToKeep = 30) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
-        
-        // Очищуємо стару денну статистику
-        for (const [dateString] of this.dailyStats.entries()) {
-            if (new Date(dateString) < cutoffDate) {
-                this.dailyStats.delete(dateString);
-            }
-        }
-        
-        // Очищуємо старі відгуки
-        this.userFeedback = this.userFeedback.filter(
-            feedback => feedback.timestamp > cutoffDate
-        );
-        
-        console.log(`🧹 Cleaned analytics data older than ${daysToKeep} days`);
     }
 }
 
-// Глобальний інстанс аналітики
+// Створюємо синглтон
 const chatAnalytics = new ChatAnalytics();
-
-// Автоматичне очищення даних кожен день о 2:00
-setInterval(() => {
-    const now = new Date();
-    if (now.getHours() === 2 && now.getMinutes() === 0) {
-        chatAnalytics.cleanOldData();
-    }
-}, 60000); // Перевіряємо кожну хвилину
 
 module.exports = chatAnalytics;

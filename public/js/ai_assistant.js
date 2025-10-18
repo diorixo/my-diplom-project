@@ -319,17 +319,16 @@ class EnhancedChatWidget {
                 }
             </div>
         `;
-
-        // Відправляємо фідбек на сервер
-        this.submitFeedback(isPositive ? 5 : 2, '', this.conversationId, source);
-
+            
+        // Відправляємо фідбек на сервер - ВИПРАВЛЕНО: передаємо rating як є
+        this.submitFeedback(rating, '', this.conversationId, source);
+            
         this.trackEvent('message_feedback', { 
             rating: rating,
             source: source,
             conversation_id: this.conversationId
         });
-
-        // Автоматично прибираємо фідбек через 3 секунди
+    
         setTimeout(() => {
             feedbackDiv.style.opacity = '0';
             setTimeout(() => {
@@ -413,6 +412,7 @@ class EnhancedChatWidget {
         }
 
         const data = await response.json();
+
         return {
             message: data.message,
             source: data.source || 'ai',
@@ -428,13 +428,13 @@ class EnhancedChatWidget {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    rating,
+                    rating, // тепер це 'positive' або 'negative'
                     comment,
                     conversation_id,
                     message_source: source
                 })
             });
-
+        
             if (response.ok) {
                 this.trackEvent('feedback_submitted', { rating, has_comment: !!comment, source });
                 return true;

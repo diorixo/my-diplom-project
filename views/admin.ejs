@@ -136,7 +136,7 @@
                         <option value="month">Цей місяць</option>
                     </select>
                 </div>
-
+            
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon chat-icon">
@@ -147,7 +147,6 @@
                         <div class="stat-content">
                             <div class="stat-value" id="total-sessions">0</div>
                             <div class="stat-label">Загальних сесій</div>
-                            <div class="stat-change positive" id="sessions-change">+0%</div>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -159,28 +158,26 @@
                         <div class="stat-content">
                             <div class="stat-value" id="total-messages">0</div>
                             <div class="stat-label">Повідомлень</div>
-                            <div class="stat-change positive" id="messages-change">+0%</div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon rating-icon">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                             </svg>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value" id="avg-satisfaction">0.0</div>
-                            <div class="stat-label">Середня оцінка</div>
-                            <div class="stat-change positive" id="satisfaction-change">+0%</div>
+                            <div class="stat-value" id="avg-satisfaction">0%</div>
+                            <div class="stat-label">Рівень задоволеності (👍)</div>
                         </div>
                     </div>
                 </div>
-
+            
                 <div class="chart-container">
                     <h3>Активність за період</h3>
                     <canvas id="activity-chart"></canvas>
                 </div>
-
+            
                 <div class="two-column-grid">
                     <div class="info-card">
                         <h3>Популярні питання</h3>
