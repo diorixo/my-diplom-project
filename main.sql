@@ -41,9 +41,10 @@ CREATE TABLE trainers (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     specialization VARCHAR(255),
-	bio VARCHAR(255),
+	bio VARCHAR(500),
     rating DECIMAL(3,2) DEFAULT 0.00,
     total_reviews INTEGER DEFAULT 0,
+	avatar_url VARCHAR(500),
 	created_at TIMESTAMP DEFAULT now() NOT NULL,
 	updated_at TIMESTAMP DEFAULT now() NOT NULL,
 
@@ -135,7 +136,6 @@ CREATE TABLE trainings (
 	max_participants INTEGER NOT NULL,
 	current_participants INTEGER default 0,
 	status VARCHAR(50) DEFAULT 'active',
-	visible BOOLEAN DEFAULT true,
 	created_at TIMESTAMP DEFAULT now() NOT NULL,
 	updated_at TIMESTAMP DEFAULT now() NOT NULL,
 
@@ -161,7 +161,7 @@ DROP TABLE IF EXISTS bookings CASCADE;
 CREATE TABLE bookings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    training_id INTEGER, -- може бути NULL
+    training_id INTEGER, -- 👈 тможе бути NULL
     visit_type VARCHAR(50) DEFAULT 'group', -- group | free_visit | personal
     notes VARCHAR(255),
     attendance VARCHAR(50) DEFAULT 'pending',
@@ -318,6 +318,61 @@ FOR EACH ROW
 EXECUTE FUNCTION update_balance_after_purchase();
 
 select * from purchases order by id;
+------------------------------------------------------
+
+-- Таблиця для сесій чату
+CREATE TABLE chat_sessions (
+    id SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(255) UNIQUE NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP,
+    last_activity TIMESTAMP NOT NULL,
+    message_count INTEGER DEFAULT 0,
+    user_agent TEXT,
+    ip_address VARCHAR(45),
+    status VARCHAR(20) DEFAULT 'active',
+    duration INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблиця для повідомлень чату
+CREATE TABLE chat_messages (
+    id SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(255) NOT NULL,
+    message_type VARCHAR(10) NOT NULL, -- 'user' or 'bot'
+    content TEXT NOT NULL,
+    response_source VARCHAR(10), -- 'faq' or 'ai'
+    timestamp TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Таблиця для відгуків
+CREATE TABLE chat_feedback (
+    id SERIAL PRIMARY KEY,
+    conversation_id VARCHAR(255) NOT NULL,
+    is_like BOOLEAN NOT NULL,
+    comment TEXT,
+    message_source VARCHAR(10), -- 'faq' or 'ai'
+    timestamp TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Індекси для швидкого пошуку
+CREATE INDEX idx_chat_sessions_conversation ON chat_sessions(conversation_id);
+CREATE INDEX idx_chat_sessions_start_time ON chat_sessions(start_time);
+CREATE INDEX idx_chat_messages_conversation ON chat_messages(conversation_id);
+CREATE INDEX idx_chat_messages_timestamp ON chat_messages(timestamp);
+CREATE INDEX idx_chat_feedback_conversation ON chat_feedback(conversation_id);
+CREATE INDEX idx_chat_feedback_timestamp ON chat_feedback(timestamp);
+
+select * from chat_sessions;
+select * from chat_messages;
+select * from chat_feedback;
+
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name IN ('chat_sessions', 'chat_messages', 'chat_feedback');
 ------------------------------------------------------
 
 -- Інше --
